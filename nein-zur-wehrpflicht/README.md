@@ -27,7 +27,7 @@ Grenze: Wer im Inkognito-Modus abstimmt, einen anderen Browser nimmt oder alle B
 2. **Root Directory** auf `nein-zur-wehrpflicht` stellen.
 3. Unter **Storage** eine **Upstash Redis**-Datenbank in der Region **Frankfurt (eu-central-1)** anlegen und mit dem Projekt verbinden. So steht es in der Datenschutzerklärung. Das setzt `KV_REST_API_URL` und `KV_REST_API_TOKEN`. Die Server-Funktionen laufen über `vercel.json` ebenfalls in Frankfurt (`fra1`).
 4. Unter **Environment Variables** `DEVICE_SECRET` mit einem langen Zufallswert anlegen (z. B. `openssl rand -hex 32`). Mit eigener Domain zusätzlich `NEXT_PUBLIC_SITE_URL` setzen, damit Teilen-Links und Vorschaubilder sie zeigen.
-5. Impressum und Datenschutz sind mit den Angaben von Selo Digital gefüllt. Die Datenschutzerklärung nennt einen Vertrag über die Auftragsverarbeitung mit Vercel, den Vercel nur im Pro-Tarif anbietet. Wer Hoster, Tarif oder Datenbank ändert, passt `src/app/datenschutz/page.tsx` an.
+5. Impressum und Datenschutz nennen Akram Selo als Verantwortlichen, die Seite ist privat und nicht gewerblich. Einen Vertrag über die Auftragsverarbeitung (Art. 28 DSGVO) bietet Vercel nur ab dem Pro-Tarif an. Wer Hoster oder Datenbank ändert, passt `src/app/datenschutz/page.tsx` an.
 6. **Deploy** klicken. Fehlt die Datenbank, zeigt die Live-Seite einen Hinweis, statt Stimmen still zu verlieren.
 
 Alle Einstellungen stehen in `.env.example`.

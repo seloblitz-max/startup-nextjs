@@ -15,9 +15,7 @@ export default function Datenschutz() {
 
       <h2>Verantwortlicher</h2>
       <p>
-        Selo Digital
-        <br />
-        Inhaber: Akram Selo
+        Akram Selo
         <br />
         Deutschland
         <br />
@@ -33,9 +31,8 @@ export default function Datenschutz() {
         verarbeitet. Die Server-Funktionen dieser Website laufen in Frankfurt am Main.
       </p>
       <p>
-        Wir haben mit Vercel einen Vertrag über die Auftragsverarbeitung gemäß Art.&nbsp;28 DSGVO geschlossen. Vercel verarbeitet
-        die Daten nur nach unseren Weisungen. Dabei können Daten auch in die USA übermittelt werden. Vercel ist nach dem EU-US
-        Data Privacy Framework zertifiziert. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse
+        Vercel kann Daten auch in die USA übermitteln und ist dafür nach dem EU-US Data Privacy Framework zertifiziert.
+        Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse
         liegt in einer sicheren, schnellen und zuverlässigen Bereitstellung unserer Website. Weitere Informationen finden Sie
         in der{" "}
         <a href="https://vercel.com/legal/privacy-notice" target="_blank" rel="noopener noreferrer">
