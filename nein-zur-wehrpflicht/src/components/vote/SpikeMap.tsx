@@ -23,21 +23,48 @@ function heightFor(n: number, max: number) {
   return MIN_SPIKE + (MAX_SPIKE - MIN_SPIKE) * (n / max);
 }
 
-/** Beschriftungen für die größten Städte, ohne dass sie sich überlappen. */
-function pickLabels(counts: Counts, max: number, mine: string | null) {
-  const ranked = CITIES.filter((c) => (counts[c.id] ?? 0) > 0).sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0));
-  if (mine) ranked.sort((a, b) => Number(b.id === mine) - Number(a.id === mine));
-  const placed: Array<[number, number]> = [];
-  const out: string[] = [];
-  for (const c of ranked) {
-    const [x, y] = CITY_XY[c.id];
-    const tip = y - heightFor(counts[c.id] ?? 0, max);
-    if (placed.some(([px, py]) => Math.abs(px - x) < 190 && Math.abs(py - tip) < 74)) continue;
-    placed.push([x, tip]);
-    out.push(c.id);
-    if (out.length >= 4) break;
-  }
-  return new Set(out);
+type NameLabel = { x: number; y: number; anchor: "start" | "end" | "middle"; leader?: boolean };
+
+/**
+ * Wo der Name jeder Stadt steht (Grundlinie, in Kartenkoordinaten). Von Hand gesetzt, damit sich auch im
+ * Ruhrgebiet nichts überlappt; dort führen kurze Linien vom Punkt zum Namen.
+ */
+const NAME_AT: Record<string, NameLabel> = {
+  hamburg: { x: 472, y: 288, anchor: "start" },
+  bremen: { x: 324, y: 365, anchor: "end" },
+  berlin: { x: 812, y: 453, anchor: "start" },
+  hannover: { x: 446, y: 483, anchor: "start" },
+  bielefeld: { x: 322, y: 539, anchor: "start" },
+  magdeburg: { x: 607, y: 522, anchor: "end" },
+  leipzig: { x: 717, y: 651, anchor: "start" },
+  dresden: { x: 859, y: 694, anchor: "start" },
+  erfurt: { x: 577, y: 714, anchor: "start" },
+  dortmund: { x: 213, y: 621, anchor: "start" },
+  essen: { x: 228, y: 663, anchor: "start", leader: true },
+  duesseldorf: { x: 228, y: 705, anchor: "start", leader: true },
+  koeln: { x: 228, y: 747, anchor: "start", leader: true },
+  bonn: { x: 228, y: 789, anchor: "start", leader: true },
+  frankfurt: { x: 330, y: 856, anchor: "start" },
+  mainz: { x: 256, y: 873, anchor: "end" },
+  nuernberg: { x: 555, y: 966, anchor: "end" },
+  karlsruhe: { x: 265, y: 1037, anchor: "end" },
+  stuttgart: { x: 379, y: 1077, anchor: "start" },
+  muenchen: { x: 642, y: 1184, anchor: "start" },
+  freiburg: { x: 199, y: 1203, anchor: "end" },
+};
+
+const shortName = (name: string) => (name === "Frankfurt am Main" ? "Frankfurt" : name);
+
+/** Die drei Städte mit den meisten Zusagen und die eigene Stadt bekommen ihre Zahl hinter den Namen. */
+function pickLabels(counts: Counts, mine: string | null) {
+  const out = new Set(
+    CITIES.filter((c) => (counts[c.id] ?? 0) > 0)
+      .sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0))
+      .slice(0, 3)
+      .map((c) => c.id),
+  );
+  if (mine) out.add(mine);
+  return out;
 }
 
 export default function SpikeMap() {
@@ -56,7 +83,7 @@ export default function SpikeMap() {
   }, [inView, reduce]);
 
   const max = Math.max(1, ...Object.values(counts));
-  const labels = useMemo(() => pickLabels(counts, max, mine), [counts, max, mine]);
+  const labels = useMemo(() => pickLabels(counts, mine), [counts, mine]);
   const top = useMemo(
     () =>
       CITIES.filter((c) => (counts[c.id] ?? 0) > 0)
@@ -141,35 +168,40 @@ export default function SpikeMap() {
           );
         })}
 
-        {ready
-          ? ORDER.filter((c) => labels.has(c.id)).map((c) => {
-              const [x, y] = CITY_XY[c.id];
-              const n = counts[c.id] ?? 0;
-              const h = grown ? heightFor(n, max) : 0;
-              const anchor = x > MAP_W - 170 ? "end" : x < 170 ? "start" : "middle";
-              return (
-                <motion.g
-                  key={c.id}
-                  initial={false}
-                  animate={{ y: y - h - 16, opacity: grown ? 1 : 0 }}
-                  transition={reduce ? { duration: 0 } : SPRING}
-                  style={{ x }}
-                  className="pointer-events-none"
-                >
-                  <text
-                    textAnchor={anchor}
-                    className="fill-paper font-display text-[34px] font-extrabold uppercase"
-                    style={{ paintOrder: "stroke", stroke: "#0c0b0a", strokeWidth: 8, strokeLinejoin: "round" }}
-                  >
-                    {c.name === "Frankfurt am Main" ? "Frankfurt" : c.name}
-                    <tspan dx="10" className={mine === c.id ? "fill-paper" : "fill-signal-hi"}>
-                      {fmt(n)}
-                    </tspan>
-                  </text>
-                </motion.g>
-              );
-            })
-          : null}
+        {CITIES.map((c) => {
+          const [x, y] = CITY_XY[c.id];
+          const at = NAME_AT[c.id];
+          const isMine = mine === c.id;
+          const n = counts[c.id] ?? 0;
+          return (
+            <g
+              key={c.id}
+              className="cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSel(sel === c.id ? null : c.id);
+              }}
+            >
+              {at.leader ? (
+                <path d={`M${x + 9} ${y + 3} L${at.x - 8} ${at.y - 10}`} stroke="#f3efe6" strokeOpacity="0.4" strokeWidth="2" fill="none" />
+              ) : null}
+              <text
+                x={at.x}
+                y={at.y}
+                textAnchor={at.anchor}
+                className={`font-display text-[30px] font-extrabold uppercase ${isMine ? "fill-signal-hi" : "fill-paper"}`}
+                style={{ paintOrder: "stroke", stroke: "#0c0b0a", strokeWidth: 7, strokeLinejoin: "round" }}
+              >
+                {shortName(c.name)}
+                {ready && labels.has(c.id) ? (
+                  <tspan dx="9" className={isMine ? "fill-paper" : "fill-signal-hi"}>
+                    {fmt(n)}
+                  </tspan>
+                ) : null}
+              </text>
+            </g>
+          );
+        })}
       </svg>
 
       {selCity ? (

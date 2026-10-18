@@ -23,14 +23,16 @@ export default function Board() {
         </Reveal>
 
         <div className="mt-12 grid gap-14 lg:mt-16 lg:grid-cols-12 lg:gap-10">
-          <div className="order-2 lg:order-1 lg:col-span-5">
+          <div className="lg:col-span-5">
             <div className="lg:sticky lg:top-24">
-              <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-mute lg:hidden">So verteilt sich Deutschland</p>
+              <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-mute">Alle 21 Treffpunkte</p>
               <SpikeMap />
-              <p className="mt-4 text-center text-sm text-mute">Je höher die Spitze, desto mehr sind dabei. Tipp auf eine Stadt.</p>
+              <p className="mt-4 text-center text-sm text-mute">
+                Je höher die Spitze, desto mehr sind dabei. Tipp auf eine Stadt, dann siehst du den Treffpunkt.
+              </p>
             </div>
           </div>
-          <div className="order-1 lg:order-2 lg:col-span-7">
+          <div className="lg:col-span-7">
             <CityList />
           </div>
         </div>

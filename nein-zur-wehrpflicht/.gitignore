@@ -4,3 +4,7 @@ node_modules
 .vercel
 next-env.d.ts
 *.tsbuildinfo
+
+# Von `next dev` erzeugte Hinweise für KI-Werkzeuge
+/AGENTS.md
+/CLAUDE.md
