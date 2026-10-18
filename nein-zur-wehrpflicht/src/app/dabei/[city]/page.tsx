@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import HomePage from "@/components/HomePage";
 import { CITIES, CITY_BY_ID } from "@/lib/cities";
-import { SITE_NAME } from "@/lib/site";
+import { ogImage, SITE_NAME } from "@/lib/site";
 import { safeSnapshot } from "@/lib/store";
 
 // Einladungslink: "Ich bin in Berlin dabei, kommst du mit?"
@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title}. Kommst du mit?`,
       description,
       url: `/dabei/${city.id}`,
+      images: [ogImage(`${city.id}.jpg`, "Einladung zum Protest gegen die Wehrpflicht am 31. Oktober")],
     },
   };
 }

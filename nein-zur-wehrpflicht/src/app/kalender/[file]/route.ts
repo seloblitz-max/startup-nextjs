@@ -1,10 +1,11 @@
 import { CITIES } from "@/lib/cities";
-import { siteUrl } from "@/lib/site";
+import { pagePath, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
+export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return CITIES.map((c) => ({ city: c.id }));
+  return CITIES.map((c) => ({ file: `${c.id}.ics` }));
 }
 
 function esc(s: string) {
@@ -30,8 +31,9 @@ function fold(line: string) {
   return out.join("\r\n ");
 }
 
-export async function GET(_req: Request, ctx: { params: Promise<{ city: string }> }) {
-  const { city } = await ctx.params;
+/** Kalendereintrag pro Stadt, etwa /kalender/berlin.ics. */
+export async function GET(_req: Request, ctx: { params: Promise<{ file: string }> }) {
+  const city = (await ctx.params).file.replace(/\.ics$/, "");
   const c = CITIES.find((x) => x.id === city);
   if (!c) return new Response("Nicht gefunden", { status: 404 });
   const lines = [
@@ -48,7 +50,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ city: string }
     `SUMMARY:${esc(`Protest gegen die Wehrpflicht: ${c.name}`)}`,
     `LOCATION:${esc(`${c.place}, ${c.name}`)}`,
     `DESCRIPTION:${esc(`Treffpunkt ${c.place}, ab 14 Uhr. Bleib friedlich und komm mit Freund*innen. ${siteUrl()}`)}`,
-    `URL:${siteUrl()}/dabei/${c.id}`,
+    `URL:${siteUrl()}${pagePath(`/dabei/${c.id}`)}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
     "ACTION:DISPLAY",

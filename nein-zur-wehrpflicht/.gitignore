@@ -8,3 +8,7 @@ next-env.d.ts
 # Von `next dev` erzeugte Hinweise für KI-Werkzeuge
 /AGENTS.md
 /CLAUDE.md
+
+# Datei-Paket (STATIC_EXPORT=1) und fertiges ZIP
+/out
+/paket

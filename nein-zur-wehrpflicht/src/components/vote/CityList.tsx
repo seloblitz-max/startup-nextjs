@@ -130,6 +130,7 @@ export default function CityList() {
               key={id}
               city={BY_ID[id]}
               n={counts[id] ?? 0}
+              ready={ready}
               max={max}
               rank={sort === "top" ? order.indexOf(id) + 1 : 0}
               mine={mine}
@@ -168,6 +169,7 @@ function Row({
   ref,
   city,
   n,
+  ready,
   max,
   rank,
   mine,
@@ -177,6 +179,8 @@ function Row({
   ref?: React.Ref<HTMLLIElement>;
   city: City;
   n: number;
+  /** Erst wenn Zahlen da sind, wird gezählt. Davor ein Strich statt einer falschen Null. */
+  ready: boolean;
   max: number;
   rank: number;
   mine: string | null;
@@ -201,7 +205,7 @@ function Row({
         <p className="city-place">{city.place}</p>
       </div>
       <p className="city-count">
-        <Ticker n={n} />
+        {ready ? <Ticker n={n} /> : <span className="text-mute">–</span>}
         <span className="city-count-label">dabei</span>
       </p>
       <VoteButton city={city} mine={mine} pending={pending} />

@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
 import { SITE_NAME } from "@/lib/site";
 
+export const dynamic = "force-static";
+
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: `${SITE_NAME}: Nein zur Wehrpflicht`,
@@ -12,8 +14,8 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#0c0b0a",
     theme_color: "#0c0b0a",
     icons: [
-      { src: "/icon", sizes: "64x64", type: "image/png" },
-      { src: "/apple-icon", sizes: "180x180", type: "image/png" },
+      { src: "/icon.png", sizes: "64x64", type: "image/png" },
+      { src: "/apple-icon.png", sizes: "180x180", type: "image/png" },
     ],
   };
 }

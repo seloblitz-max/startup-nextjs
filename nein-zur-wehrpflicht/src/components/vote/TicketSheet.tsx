@@ -17,6 +17,8 @@ import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { CITY_BY_ID, mapsUrl, type City } from "@/lib/cities";
 import { cn, fmt } from "@/lib/format";
+import { pagePath } from "@/lib/site";
+import { composeStory, storyHost } from "@/lib/story-image";
 import { voteStore } from "@/lib/vote-store";
 import SquirrelMark from "@/components/SquirrelMark";
 import { useVote, withdrawVote } from "./VoteProvider";
@@ -50,12 +52,23 @@ function shareText(city: City) {
 }
 
 function inviteUrl(city: City) {
-  return `${window.location.origin}/dabei/${city.id}`;
+  return `${window.location.origin}${pagePath(`/dabei/${city.id}`)}`;
 }
 
 function toFile(blob: Blob, name: string) {
   const type = blob.type === "image/png" ? "image/png" : "image/jpeg";
   return new File([blob], `${name}.${type === "image/png" ? "png" : "jpg"}`, { type });
+}
+
+/** Story-Bild mit Nummer und Adresse. Klappt das Zeichnen nicht, gibt es wenigstens das Grundbild der Stadt. */
+async function storyFile(city: City, rank: number, name: string) {
+  try {
+    return toFile(await composeStory(city.id, rank, storyHost()), name);
+  } catch {
+    const r = await fetch(`/story/${city.id}.jpg`);
+    if (!r.ok) throw new Error(String(r.status));
+    return toFile(await r.blob(), name);
+  }
 }
 
 function saveFile(file: File) {
@@ -91,7 +104,6 @@ async function copyText(text: string) {
 }
 
 function TicketBody({ city, rank }: { city: City; rank: number }) {
-  const storyUrl = `/story/${city.id}?nr=${rank}`;
   const fileName = `ich-bin-dabei-${city.id}`;
   const file = useRef<File | null>(null);
   const [busy, setBusy] = useState(false);
@@ -100,20 +112,19 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
 
   useEffect(() => setCanShare(typeof navigator.share === "function"), []);
 
-  // Bild schon vorab laden: iOS erlaubt das Teilen nur direkt nach dem Antippen.
+  // Bild schon vorab bauen: iOS erlaubt das Teilen nur direkt nach dem Antippen.
   useEffect(() => {
     let alive = true;
     file.current = null;
-    fetch(storyUrl)
-      .then((r) => (r.ok ? r.blob() : Promise.reject(new Error(String(r.status)))))
-      .then((b) => {
-        if (alive) file.current = toFile(b, fileName);
+    storyFile(city, rank, fileName)
+      .then((f) => {
+        if (alive) file.current = f;
       })
       .catch(() => {});
     return () => {
       alive = false;
     };
-  }, [storyUrl, fileName]);
+  }, [city, rank, fileName]);
 
   async function shareStory() {
     if (busy) return;
@@ -121,9 +132,7 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
     try {
       let f = file.current;
       if (!f) {
-        const r = await fetch(storyUrl);
-        if (!r.ok) throw new Error(String(r.status));
-        f = toFile(await r.blob(), fileName);
+        f = await storyFile(city, rank, fileName);
         file.current = f;
       }
       if (navigator.canShare?.({ files: [f] })) {
@@ -202,7 +211,7 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
             )}
             {copied ? "Kopiert" : "Link kopieren"}
           </button>
-          <a className="btn btn-ghost" href={`/kalender/${city.id}`}>
+          <a className="btn btn-ghost" href={`/kalender/${city.id}.ics`}>
             <CalendarPlus weight="bold" className="size-5" aria-hidden="true" />
             Kalender
           </a>

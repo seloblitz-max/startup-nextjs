@@ -5,6 +5,9 @@ export const metadata: Metadata = { title: "Datenschutzerklärung", alternates: 
 
 const MAIL = "selodigital.web@gmail.com";
 
+// Zwei Fassungen: Vercel mit Upstash (Standard) oder das Datei-Paket für Hostinger (SITE_HOSTING=hostinger beim Bauen).
+const HOSTINGER = process.env.SITE_HOSTING === "hostinger";
+
 export default function Datenschutz() {
   return (
     <LegalPage title={"Datenschutz­erklärung"}>
@@ -25,21 +28,42 @@ export default function Datenschutz() {
       </p>
 
       <h2>1. Hosting</h2>
-      <p>
-        Diese Website wird bei Vercel gehostet. Anbieter ist die Vercel Inc., 440 N Barranca Avenue #4133, Covina, CA&nbsp;91723,
-        USA. Wenn Sie unsere Website besuchen, werden die unter „Server-Logfiles“ genannten Daten auf den Servern von Vercel
-        verarbeitet. Die Server-Funktionen dieser Website laufen in Frankfurt am Main.
-      </p>
-      <p>
-        Vercel kann Daten auch in die USA übermitteln und ist dafür nach dem EU-US Data Privacy Framework zertifiziert.
-        Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse
-        liegt in einer sicheren, schnellen und zuverlässigen Bereitstellung unserer Website. Weitere Informationen finden Sie
-        in der{" "}
-        <a href="https://vercel.com/legal/privacy-notice" target="_blank" rel="noopener noreferrer">
-          Datenschutzerklärung von Vercel
-        </a>
-        .
-      </p>
+      {HOSTINGER ? (
+        <>
+          <p>
+            Diese Website wird bei Hostinger gehostet. Anbieter ist die Hostinger International Ltd., 61 Lordou Vironos Street,
+            6023 Larnaka, Zypern. Wenn Sie unsere Website besuchen, werden die unter „Server-Logfiles“ genannten Daten auf den
+            Servern von Hostinger verarbeitet.
+          </p>
+          <p>
+            Wir haben mit Hostinger einen Vertrag über die Auftragsverarbeitung gemäß Art.&nbsp;28 DSGVO geschlossen. Hostinger
+            verarbeitet die Daten nur nach unseren Weisungen. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser
+            berechtigtes Interesse liegt in einer sicheren, schnellen und zuverlässigen Bereitstellung unserer Website. Weitere
+            Informationen finden Sie in der{" "}
+            <a href="https://www.hostinger.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
+              Datenschutzerklärung von Hostinger
+            </a>
+            .
+          </p>
+        </>
+      ) : (
+        <>
+          <p>
+            Diese Website wird bei Vercel gehostet. Anbieter ist die Vercel Inc., 440 N Barranca Avenue #4133, Covina,
+            CA&nbsp;91723, USA. Wenn Sie unsere Website besuchen, werden die unter „Server-Logfiles“ genannten Daten auf den
+            Servern von Vercel verarbeitet. Die Server-Funktionen dieser Website laufen in Frankfurt am Main.
+          </p>
+          <p>
+            Vercel kann Daten auch in die USA übermitteln und ist dafür nach dem EU-US Data Privacy Framework zertifiziert.
+            Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse liegt in einer sicheren,
+            schnellen und zuverlässigen Bereitstellung unserer Website. Weitere Informationen finden Sie in der{" "}
+            <a href="https://vercel.com/legal/privacy-notice" target="_blank" rel="noopener noreferrer">
+              Datenschutzerklärung von Vercel
+            </a>
+            .
+          </p>
+        </>
+      )}
       <p>
         Schriften, Bilder und Skripte werden direkt von dieser Website geladen. Inhalte von Google oder anderen
         Drittanbietern werden nicht nachgeladen.
@@ -76,16 +100,23 @@ export default function Datenschutz() {
         (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a und Art.&nbsp;9 Abs.&nbsp;2 lit.&nbsp;a DSGVO). Sie können die Einwilligung jederzeit widerrufen: Öffnen Sie
         Ihr Ticket und tippen Sie auf „Zusage zurückziehen“. Der Eintrag wird dann sofort gelöscht.
       </p>
-      <p>
-        Die Daten liegen in einer Datenbank der Upstash, Inc. (USA) im Rechenzentrum Frankfurt am Main. Mit Upstash besteht
-        ein Vertrag über die Auftragsverarbeitung gemäß Art.&nbsp;28 DSGVO. Für mögliche Übermittlungen in die USA nutzt Upstash
-        das EU-US Data Privacy Framework und die Standardvertragsklauseln der EU-Kommission. Weitere Informationen finden Sie
-        in der{" "}
-        <a href="https://upstash.com/static/trust/privacy.pdf" target="_blank" rel="noopener noreferrer">
-          Datenschutzerklärung von Upstash
-        </a>
-        .
-      </p>
+      {HOSTINGER ? (
+        <p>
+          Die Daten liegen in einer Datenbank auf dem Webspace dieser Website bei Hostinger (siehe Hosting). An andere Stellen
+          geben wir sie nicht weiter.
+        </p>
+      ) : (
+        <p>
+          Die Daten liegen in einer Datenbank der Upstash, Inc. (USA) im Rechenzentrum Frankfurt am Main. Mit Upstash besteht
+          ein Vertrag über die Auftragsverarbeitung gemäß Art.&nbsp;28 DSGVO. Für mögliche Übermittlungen in die USA nutzt
+          Upstash das EU-US Data Privacy Framework und die Standardvertragsklauseln der EU-Kommission. Weitere Informationen
+          finden Sie in der{" "}
+          <a href="https://upstash.com/static/trust/privacy.pdf" target="_blank" rel="noopener noreferrer">
+            Datenschutzerklärung von Upstash
+          </a>
+          .
+        </p>
+      )}
 
       <h2>4. Schutz vor Missbrauch</h2>
       <p>

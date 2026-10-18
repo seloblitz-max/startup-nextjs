@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Big_Shoulders, Bricolage_Grotesque, Martian_Mono, Permanent_Marker } from "next/font/google";
-import { SITE_NAME, siteUrl } from "@/lib/site";
+import { ogImage, SITE_NAME, siteUrl } from "@/lib/site";
 import "./globals.css";
 
 // Alle Schriften werden beim Bauen heruntergeladen und von der eigenen Domain ausgeliefert.
@@ -26,6 +26,7 @@ export const metadata: Metadata = {
     siteName: SITE_NAME,
     title: "Nein zur Wehrpflicht. 31. Oktober, 14 Uhr, 21 Städte.",
     description: "Sag, wo du dabei bist, und sieh live, wie viele kommen.",
+    images: [ogImage("start.jpg", "Nein zur Wehrpflicht. Protest am Samstag, 31. Oktober, ab 14 Uhr in 21 Städten.")],
   },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false, email: false, address: false },

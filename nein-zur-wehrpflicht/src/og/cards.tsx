@@ -107,8 +107,11 @@ const hostStyle = {
   color: MUTE,
 };
 
+/** Fußzeile der Vorschaubilder: die Adresse der Seite, im Datei-Paket ohne feste Adresse der Hashtag. */
+const footer = (host: string | null) => host ?? "#GENZregelt";
+
 /** 1200 × 630, für die Startseite. */
-export function OgHome({ photo, host }: { photo: string; host: string }) {
+export function OgHome({ photo, host }: { photo: string; host: string | null }) {
   return (
     <div style={frame}>
       <Photo photo={photo} width={540} />
@@ -134,14 +137,14 @@ export function OgHome({ photo, host }: { photo: string; host: string }) {
             In 21 Städten gleichzeitig. Sag, wo du dabei bist.
           </div>
         </div>
-        <div style={hostStyle}>{host}</div>
+        <div style={hostStyle}>{footer(host)}</div>
       </div>
     </div>
   );
 }
 
 /** 1200 × 630, für Einladungen in eine Stadt. */
-export function OgCity({ photo, city, host }: { photo: string; city: City; host: string }) {
+export function OgCity({ photo, city, host }: { photo: string; city: City; host: string | null }) {
   const size = citySize(city.name, [138, 118, 96, 78]);
   return (
     <div style={frame}>
@@ -170,14 +173,18 @@ export function OgCity({ photo, city, host }: { photo: string; city: City; host:
             Nein zur Wehrpflicht. Kommst du mit?
           </div>
         </div>
-        <div style={hostStyle}>{host}</div>
+        <div style={hostStyle}>{footer(host)}</div>
       </div>
     </div>
   );
 }
 
-/** 1080 × 1920, Bild für Instagram- und WhatsApp-Storys. */
-export function Story({ photo, city, nr, host }: { photo: string; city: City; nr: number | null; host: string }) {
+/**
+ * 1080 × 1920, Grundbild für Instagram- und WhatsApp-Storys. Nummernfeld und Adresse setzt src/lib/story-image.ts im
+ * Browser ein, rechts neben die Stadt und unter „Sag auch, wo du dabei bist“. Die Spalte mit der Stadt ist deshalb fest
+ * breit. Wer am unteren Teil etwas verschiebt, misst die Werte in story-image.ts neu.
+ */
+export function Story({ photo, city }: { photo: string; city: City }) {
   const size = citySize(city.name, [176, 150, 124, 100]);
   return (
     <div style={{ ...frame, flexDirection: "column" }}>
@@ -229,8 +236,8 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
           <span>Ich bin</span>
           <span style={{ color: ORANGE }}>dabei.</span>
         </div>
-        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginTop: 56 }}>
-          <div style={{ display: "flex", flexDirection: "column", flexShrink: 1 }}>
+        <div style={{ display: "flex", marginTop: 56 }}>
+          <div style={{ display: "flex", flexDirection: "column", width: 620 }}>
             <span
               style={{
                 fontFamily: "Big Shoulders",
@@ -238,7 +245,6 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
                 fontSize: size,
                 lineHeight: 0.86,
                 textTransform: "uppercase",
-                maxWidth: 640,
               }}
             >
               {city.name}
@@ -246,27 +252,6 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
             <span style={{ marginTop: 22, fontSize: 44, fontWeight: 700 }}>{city.place}</span>
             <span style={{ marginTop: 10, fontSize: 40, fontWeight: 500, color: PAPER_2 }}>Samstag, 31. Oktober, 14 Uhr</span>
           </div>
-          {nr ? (
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                minWidth: 200,
-                padding: "26px 28px",
-                background: ORANGE,
-                color: INK,
-                borderRadius: 14,
-              }}
-            >
-              <span style={{ fontFamily: "Martian Mono", fontWeight: 500, fontSize: 24, letterSpacing: 4, textTransform: "uppercase" }}>Nr.</span>
-              <span style={{ fontFamily: "Big Shoulders", fontWeight: 900, fontSize: nr > 99999 ? 64 : nr > 999 ? 82 : 104, lineHeight: 1 }}>
-                {nr.toLocaleString("de-DE")}
-              </span>
-            </div>
-          ) : null}
         </div>
         <div
           style={{
@@ -280,7 +265,8 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
         >
           <div style={{ display: "flex", flexDirection: "column" }}>
             <span style={{ fontSize: 32, fontWeight: 500, color: PAPER_2 }}>Sag auch, wo du dabei bist:</span>
-            <span style={{ marginTop: 8, fontFamily: "Martian Mono", fontWeight: 500, fontSize: 30, color: PAPER }}>{host}</span>
+            {/* Platz für die Adresse, die erst im Browser dazukommt */}
+            <span style={{ marginTop: 8, fontFamily: "Martian Mono", fontWeight: 500, fontSize: 30, color: "transparent" }}>x</span>
           </div>
           <span style={{ fontFamily: "Marker", fontSize: 50, color: ORANGE, transform: "rotate(-4deg)" }}>#GENZregelt</span>
         </div>

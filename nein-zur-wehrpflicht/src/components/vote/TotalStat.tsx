@@ -11,13 +11,19 @@ export default function TotalStat() {
   const setup = useVote((s) => s.setup);
   const cities = useVote((s) => Object.values(s.counts).filter((n) => n > 0).length);
 
-  const status = !setup ? "Startet in Kürze" : live ? `Live aus ${cities} von 21 Städten` : "Verbindung wird gesucht";
+  const status = !setup
+    ? "Startet in Kürze"
+    : live
+      ? `Live aus ${cities} von 21 Städten`
+      : ready
+        ? "Verbindung wird gesucht"
+        : "Zahlen werden geladen";
 
   return (
     <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
       <p className="flex items-end gap-3">
         <span className="font-display text-[4.25rem] font-black leading-[0.8] text-paper sm:text-[5.5rem]">
-          {ready ? <RollingNumber value={total} /> : "0"}
+          {ready ? <RollingNumber value={total} /> : <span className="text-mute">–</span>}
         </span>
         <span className="pb-1 text-sm font-semibold leading-tight text-paper-2">
           {total === 1 ? "Zusage" : "Zusagen"}

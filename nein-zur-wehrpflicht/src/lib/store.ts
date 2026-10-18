@@ -269,6 +269,8 @@ export function rememberSnapshot(snap: Snapshot) {
 
 /** Für die Seite selbst: Fehler dürfen das Rendern nie verhindern. */
 export async function safeSnapshot(): Promise<Snapshot | null> {
+  // Im Datei-Paket gibt es beim Bauen keine Zahlen, sie kommen erst im Browser.
+  if (process.env.STATIC_EXPORT === "1") return null;
   try {
     return await readSnapshot();
   } catch {

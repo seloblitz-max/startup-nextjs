@@ -2,7 +2,7 @@ import HalftonePhoto from "@/components/bits/HalftonePhoto";
 import CircularBadge from "@/components/bits/CircularBadge";
 import SquirrelMark from "@/components/SquirrelMark";
 import HeroActions from "./HeroActions";
-import tor from "../../../public/img/tor.jpg";
+import tor from "@/img/tor.jpg";
 
 export default function Hero() {
   return (

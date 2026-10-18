@@ -29,19 +29,21 @@ function failed(err: unknown, what: string) {
   return deny("unavailable", 503);
 }
 
-/** Zusage für eine Stadt (oder Wechsel dorthin). */
+/** Zusage für eine Stadt (oder Wechsel dorthin). Mit `{"withdraw": true}` wird sie zurückgezogen. */
 export async function POST(req: NextRequest) {
   if (foreign(req)) return deny("forbidden", 403);
   if (!req.headers.get("content-type")?.includes("application/json")) return deny("bad_request", 415);
 
   let city: unknown;
+  let withdraw: unknown;
   try {
     const text = await req.text();
     if (text.length > 200) return deny("bad_request", 413);
-    ({ city } = JSON.parse(text));
+    ({ city, withdraw } = JSON.parse(text));
   } catch {
     return deny("bad_request", 400);
   }
+  if (withdraw === true) return withdrawVote(req);
   if (typeof city !== "string" || !CITY_IDS.has(city)) return deny("unknown_city", 400);
 
   const device = resolveDevice(req);
@@ -61,9 +63,16 @@ export async function POST(req: NextRequest) {
   }
 }
 
-/** Zusage zurückziehen. */
+/**
+ * Zusage zurückziehen. Die Seite selbst schickt dafür POST, weil manche Firewalls bei Webhostern DELETE sperren
+ * und das Zurückziehen immer klappen muss.
+ */
 export async function DELETE(req: NextRequest) {
   if (foreign(req)) return deny("forbidden", 403);
+  return withdrawVote(req);
+}
+
+async function withdrawVote(req: NextRequest) {
   const device = knownDevice(req);
   if (!device) return personal({ mine: null, removed: null }, null);
   try {

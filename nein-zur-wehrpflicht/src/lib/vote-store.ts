@@ -238,7 +238,12 @@ export const voteStore = {
 
     const revert = () => set({ pending: null, counts: before.counts, total: before.total, mine: before.mine });
     try {
-      const res = await fetch("/api/vote", { method: "DELETE", headers: tokenHeader(), cache: "no-store" });
+      const res = await fetch("/api/vote", {
+        method: "POST",
+        headers: { "content-type": "application/json", ...tokenHeader() },
+        body: JSON.stringify({ withdraw: true }),
+        cache: "no-store",
+      });
       const json = await res.json().catch(() => ({}));
       saveToken(json.deviceToken);
       if (res.ok) {

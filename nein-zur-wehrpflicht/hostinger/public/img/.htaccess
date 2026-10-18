@@ -1,0 +1,4 @@
+# Bilder und Schriften: einen Tag im Browser behalten.
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=86400"
+</IfModule>

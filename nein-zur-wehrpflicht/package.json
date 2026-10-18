@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:hostinger": "STATIC_EXPORT=1 SITE_HOSTING=hostinger next build && node scripts/hostinger-paket.mjs",
     "start": "next start",
     "typecheck": "tsc --noEmit"
   },

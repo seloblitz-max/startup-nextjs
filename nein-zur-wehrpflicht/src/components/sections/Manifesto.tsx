@@ -1,6 +1,6 @@
 import HalftonePhoto from "@/components/bits/HalftonePhoto";
 import Reveal from "@/components/Reveal";
-import schild from "../../../public/img/schild.jpg";
+import schild from "@/img/schild.jpg";
 
 const POINTS = [
   {
