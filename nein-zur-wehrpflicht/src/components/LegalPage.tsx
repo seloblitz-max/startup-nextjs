@@ -19,7 +19,7 @@ export default function LegalPage({ title, children }: { title: string; children
         </div>
       </header>
       <main id="inhalt" className="mx-auto max-w-[46rem] px-4 py-16 sm:px-6 lg:py-24">
-        <h1 className="section-title">{title}</h1>
+        <h1 className="section-title leading-[1.08]">{title}</h1>
         <div className="legal mt-10">{children}</div>
       </main>
       <Footer />

@@ -32,6 +32,8 @@ export const CITY_BY_ID: Record<string, City> = Object.fromEntries(CITIES.map((c
 export const EVENT_START = Date.UTC(2026, 9, 31, 13, 0, 0);
 export const EVENT_END = Date.UTC(2026, 9, 31, 17, 0, 0);
 export const EVENT_START_ISO = "2026-10-31T14:00:00+01:00";
+/** Zwei Wochen nach dem Protest (14.11.2026) löschen sich Zusagen, Cookie und die Kennung im Browser. */
+export const DATA_DELETE_AT = EVENT_END + 14 * 86_400_000;
 
 export function mapsUrl(c: City) {
   return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(`${c.place}, ${c.name}`);

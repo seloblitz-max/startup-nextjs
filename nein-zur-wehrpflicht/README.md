@@ -13,11 +13,11 @@ Website für den Protest gegen die Wehrpflicht am Samstag, 31. Oktober 2026, ab 
 
 ## Eine Stimme pro Gerät
 
-- Jedes Gerät bekommt eine zufällige, vom Server signierte Kennung (HMAC). Sie liegt in einem HttpOnly-Cookie und zusätzlich im Browser-Speicher. Fehlt eins von beiden, erkennt der Server das Gerät am anderen wieder. Gefälschte Kennungen werden verworfen.
+- Jedes Gerät bekommt mit der ersten Zusage eine zufällige, vom Server signierte Kennung (HMAC). Wer nur schaut, bekommt keinen Cookie, deshalb braucht die Seite kein Cookie-Banner. Die Kennung liegt in einem HttpOnly-Cookie und zusätzlich im Browser-Speicher. Fehlt eins von beiden, erkennt der Server das Gerät am anderen wieder. Gefälschte Kennungen werden verworfen.
 - Zusagen, Wechseln und Zurückziehen laufen in Redis als Lua-Skript, also atomar. Ein Gerät zählt immer genau einmal, auch bei vielen gleichzeitigen Klicks. Getestet mit 200 Geräten gleichzeitig und 40 parallelen Klicks von einem Gerät.
 - Schutz vor Skripten: höchstens `MAX_VOTES_PER_IP_MINUTE` Abstimmungen pro Anschluss und Minute (Standard 40) und `MAX_NEW_DEVICES_PER_IP` neue Geräte pro Anschluss und Tag (Standard 150, großzügig wegen Schulen, Unis und Mobilfunk). IPv6-Anschlüsse zählen pro /64-Netz. Gespeichert wird dafür nur ein gesalzener Hash mit kurzer Laufzeit, nie die IP-Adresse.
 - Abstimmungen von fremden Websites werden abgelehnt.
-- Alle Geräte-Einträge löschen sich am 14. November 2026 von selbst.
+- Alle Geräte-Einträge löschen sich am 14. November 2026 von selbst. Der Cookie läuft zum selben Zeitpunkt ab, die Kennung im Browser-Speicher verschwindet beim nächsten Besuch danach.
 
 Grenze: Wer im Inkognito-Modus abstimmt, einen anderen Browser nimmt oder alle Browserdaten löscht, gilt als neues Gerät. Eine lückenlose Sperre gibt es im Web nur mit Login oder SMS-Bestätigung. Die Seite sagt das auch offen in den Fragen und Antworten.
 
@@ -25,9 +25,9 @@ Grenze: Wer im Inkognito-Modus abstimmt, einen anderen Browser nimmt oder alle B
 
 1. Auf [vercel.com/new](https://vercel.com/new) dieses Repository importieren.
 2. **Root Directory** auf `nein-zur-wehrpflicht` stellen.
-3. Unter **Storage** eine **Upstash Redis**-Datenbank anlegen, am besten in einer EU-Region wie Frankfurt, und mit dem Projekt verbinden. Das setzt `KV_REST_API_URL` und `KV_REST_API_TOKEN`.
+3. Unter **Storage** eine **Upstash Redis**-Datenbank in der Region **Frankfurt (eu-central-1)** anlegen und mit dem Projekt verbinden. So steht es in der Datenschutzerklärung. Das setzt `KV_REST_API_URL` und `KV_REST_API_TOKEN`. Die Server-Funktionen laufen über `vercel.json` ebenfalls in Frankfurt (`fra1`).
 4. Unter **Environment Variables** `DEVICE_SECRET` mit einem langen Zufallswert anlegen (z. B. `openssl rand -hex 32`). Mit eigener Domain zusätzlich `NEXT_PUBLIC_SITE_URL` setzen, damit Teilen-Links und Vorschaubilder sie zeigen.
-5. Impressum und Datenschutz ausfüllen: die gelb markierten Stellen in `src/app/impressum/page.tsx` und `src/app/datenschutz/page.tsx`. Ein Impressum ist in Deutschland Pflicht.
+5. Impressum und Datenschutz sind mit den Angaben von Selo Digital gefüllt. Die Datenschutzerklärung nennt einen Vertrag über die Auftragsverarbeitung mit Vercel, den Vercel nur im Pro-Tarif anbietet. Wer Hoster, Tarif oder Datenbank ändert, passt `src/app/datenschutz/page.tsx` an.
 6. **Deploy** klicken. Fehlt die Datenbank, zeigt die Live-Seite einen Hinweis, statt Stimmen still zu verlieren.
 
 Alle Einstellungen stehen in `.env.example`.

@@ -1,14 +1,15 @@
 import { type NextRequest } from "next/server";
 import { getStore, StoreNotConfiguredError } from "@/lib/store";
-import { personal, resolveDevice, setupMissing } from "@/lib/api";
+import { knownDevice, personal, setupMissing } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
-/** Wofür hat dieses Gerät gestimmt? Legt beim ersten Besuch die Geräte-Kennung an. */
+/** Wofür hat dieses Gerät gestimmt? Ein neues Gerät bekommt hier noch keine Kennung, erst mit der ersten Zusage. */
 export async function GET(req: NextRequest) {
-  const device = resolveDevice(req);
+  const device = knownDevice(req);
+  if (!device) return personal({ mine: null }, null);
   try {
-    const mine = device.fresh ? null : await getStore().mine(device.id);
+    const mine = await getStore().mine(device.id);
     return personal({ mine }, device.token);
   } catch (err) {
     if (err instanceof StoreNotConfiguredError) return setupMissing();

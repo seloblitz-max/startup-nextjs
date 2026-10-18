@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { CITY_IDS } from "@/lib/cities";
 import { clientIp, hashIp, networkOf } from "@/lib/device";
 import { getStore, rememberSnapshot, StoreNotConfiguredError } from "@/lib/store";
-import { personal, resolveDevice, setupMissing } from "@/lib/api";
+import { knownDevice, personal, resolveDevice, setupMissing } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
     const result = await getStore().vote(device.id, network(req), city);
     rememberSnapshot(result.snapshot);
     if (!result.ok) {
-      return personal({ error: result.reason, snapshot: result.snapshot }, device.token, 429);
+      // Ein neues Gerät ohne gezählte Zusage bekommt auch keine Kennung.
+      return personal({ error: result.reason, snapshot: result.snapshot }, device.fresh ? null : device.token, 429);
     }
     return personal(
       { mine: result.mine, previous: result.previous, snapshot: result.snapshot },
@@ -63,8 +64,8 @@ export async function POST(req: NextRequest) {
 /** Zusage zurückziehen. */
 export async function DELETE(req: NextRequest) {
   if (foreign(req)) return deny("forbidden", 403);
-  const device = resolveDevice(req);
-  if (device.fresh) return personal({ mine: null, removed: null }, device.token);
+  const device = knownDevice(req);
+  if (!device) return personal({ mine: null, removed: null }, null);
   try {
     const result = await getStore().withdraw(device.id, network(req));
     rememberSnapshot(result.snapshot);

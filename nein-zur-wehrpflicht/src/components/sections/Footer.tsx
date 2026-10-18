@@ -26,7 +26,15 @@ export default function Footer() {
         </div>
         <p className="mt-10 text-xs text-mute">Fotos auf dieser Seite sind Symbolbilder.</p>
         <p className="mt-6 border-t border-line pt-6 text-sm text-paper-2">
-          <span className="font-semibold text-paper">selodigital</span> steht hinter Gen Z.
+          <a
+            href="https://selodigital.com.de"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="font-semibold text-paper underline decoration-signal decoration-2 underline-offset-4 transition-colors hover:text-signal-hi"
+          >
+            selodigital
+          </a>{" "}
+          steht hinter Gen Z.
         </p>
       </div>
     </footer>

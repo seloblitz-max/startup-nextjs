@@ -1,3 +1,4 @@
+import { DATA_DELETE_AT } from "./cities";
 import type { Counts, Snapshot } from "./store";
 
 export type MyVote = { city: string; rank: number };
@@ -68,13 +69,18 @@ function set(patch: Partial<VoteState>) {
 
 function readToken() {
   try {
+    // Nach dem Löschtermin ist die Kennung wertlos und verschwindet auch aus dem Browser.
+    if (Date.now() > DATA_DELETE_AT) {
+      localStorage.removeItem(TOKEN_KEY);
+      return null;
+    }
     return localStorage.getItem(TOKEN_KEY);
   } catch {
     return null;
   }
 }
 function saveToken(t: unknown) {
-  if (typeof t !== "string" || !t) return;
+  if (typeof t !== "string" || !t || Date.now() > DATA_DELETE_AT) return;
   try {
     localStorage.setItem(TOKEN_KEY, t);
   } catch {}

@@ -1,5 +1,5 @@
 import { Redis } from "@upstash/redis";
-import { CITY_IDS, EVENT_END } from "./cities";
+import { CITY_IDS, DATA_DELETE_AT } from "./cities";
 
 export type Counts = Record<string, number>;
 /** Zählerstand mit Versionsnummer. Jede Stimme erhöht `v`, so erkennt der Browser veraltete Antworten. */
@@ -35,11 +35,11 @@ const maxNewPerDay = () => envInt("MAX_NEW_DEVICES_PER_IP", 150);
 /** Abstimmungen pro Anschluss und Minute, gegen Skripte. */
 const maxPerMinute = () => envInt("MAX_VOTES_PER_IP_MINUTE", 40);
 
-/** Geräte-Einträge löschen sich zwei Wochen nach der Demo von selbst (14. November 2026). */
+/** Geräte-Einträge löschen sich zwei Wochen nach der Demo von selbst (14. November 2026), spätere nach einem Tag. */
 function deviceExpireAt() {
-  const target = Math.floor(EVENT_END / 1000) + 14 * 86_400;
+  const target = Math.floor(DATA_DELETE_AT / 1000);
   const now = Math.floor(Date.now() / 1000);
-  return String(Math.max(target, now + 86_400));
+  return String(target > now ? target : now + 86_400);
 }
 
 // Gemeinsamer Teil: Version plus Zählerstand als Lua-Tabelle.
