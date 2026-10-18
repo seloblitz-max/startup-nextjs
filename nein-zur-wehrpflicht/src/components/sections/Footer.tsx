@@ -25,6 +25,9 @@ export default function Footer() {
           </nav>
         </div>
         <p className="mt-10 text-xs text-mute">Fotos auf dieser Seite sind Symbolbilder.</p>
+        <p className="mt-6 border-t border-line pt-6 text-sm text-paper-2">
+          <span className="font-semibold text-paper">selodigital</span> steht hinter Gen Z.
+        </p>
       </div>
     </footer>
   );
