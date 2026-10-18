@@ -4,7 +4,7 @@
 
 ## In sechs Schritten online
 
-1. **Eigene Domain oder Subdomain anlegen.** Im hPanel eine neue Website hinzufügen, etwa `nein-zur-wehrpflicht.de` oder `protest.selodigital.de`. Nicht in den Ordner einer bestehenden Website entpacken, sonst wird sie überschrieben.
+1. **Eigene Domain oder Subdomain anlegen.** Im hPanel eine neue Website hinzufügen, etwa `nein-zur-wehrpflicht.de` oder `protest.selodigital.com.de`. Nicht in den Ordner einer bestehenden Website entpacken, sonst wird sie überschrieben.
 2. **PHP 8.1 oder neuer.** Unter *Erweitert → PHP-Konfiguration* prüfen. Meist ist das schon eingestellt.
 3. **ZIP hochladen und entpacken.** Im *Dateimanager* in den Ordner `public_html` der neuen Website wechseln und Platzhalter wie `default.php` löschen. Die ZIP hochladen, per Rechtsklick direkt dort entpacken und die ZIP danach löschen. Jetzt liegen `index.html`, `api.php`, `seite.php` und die versteckte Datei `.htaccess` direkt in `public_html`.
 4. **HTTPS einschalten.** Unter *Sicherheit → SSL* das Zertifikat einrichten und *HTTPS erzwingen* aktivieren. Das erst nach dem Entpacken machen, weil die ZIP eine eigene `.htaccess` mitbringt.
