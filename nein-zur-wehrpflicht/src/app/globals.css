@@ -621,6 +621,8 @@
   .board-grid {
     display: grid;
     gap: 2rem;
+    /* minmax(0, 1fr): Die Spalte bleibt so breit wie der Platz, auch auf sehr schmalen Handys (320 px). */
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas: "map" "aside" "list";
   }
   .board-map {
