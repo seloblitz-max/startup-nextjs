@@ -1,0 +1,5 @@
+# Dateinamen mit Prüfsumme ändern sich nie, der Browser darf sie also lange behalten. no-transform bittet ein CDN,
+# Skripte und Bilder unverändert weiterzugeben.
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=31536000, immutable, no-transform"
+</IfModule>

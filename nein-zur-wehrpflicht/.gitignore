@@ -1,0 +1,14 @@
+node_modules
+.next
+.env*.local
+.vercel
+next-env.d.ts
+*.tsbuildinfo
+
+# Von `next dev` erzeugte Hinweise für KI-Werkzeuge
+/AGENTS.md
+/CLAUDE.md
+
+# Datei-Paket (STATIC_EXPORT=1) und fertiges ZIP
+/out
+/paket

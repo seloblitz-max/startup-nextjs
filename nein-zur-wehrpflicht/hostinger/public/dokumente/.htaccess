@@ -1,0 +1,5 @@
+# Positionspapier und Erklärungen (PDF): einen Tag im Browser behalten. Für eine neue Fassung am besten einen
+# neuen Dateinamen wählen, dann sehen alle sofort die neue Datei.
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=86400, no-transform"
+</IfModule>

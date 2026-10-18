@@ -1,0 +1,5 @@
+# Bilder und Schriften: einen Tag im Browser behalten. no-transform bittet ein CDN, sie nicht umzurechnen
+# oder zu verkleinern, sonst werden etwa die Story-Bilder auf dem Handy unscharf.
+<IfModule mod_headers.c>
+  Header set Cache-Control "public, max-age=86400, no-transform"
+</IfModule>

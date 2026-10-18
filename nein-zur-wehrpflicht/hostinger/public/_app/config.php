@@ -1,0 +1,49 @@
+<?php
+/*
+ * Einstellungen für die Abstimmung. Meist muss hier nichts geändert werden: Ohne Angaben speichert die Seite
+ * die Zusagen in einer kleinen SQLite-Datenbank außerhalb von public_html.
+ *
+ * Diese Datei beim Aktualisieren der Website nicht überschreiben, wenn hier etwas eingetragen ist.
+ */
+return [
+    // Feste Adresse der Website, etwa 'https://beispiel.de'. Leer lassen: Die Adresse kommt aus dem Aufruf.
+    'site_url' => '',
+
+    // Ordner für die SQLite-Datenbank. Leer lassen: automatisch im Home-Verzeichnis (Ordner gzsa-daten neben
+    // „domains“ bzw. „public_html“), und wenn das nicht geht, in _app/daten.
+    'data_dir' => '',
+
+    // Nur nötig, wenn SQLite beim Webhoster fehlt: Zugangsdaten einer MySQL-Datenbank (hPanel → Datenbanken).
+    'mysql' => [
+        'host' => 'localhost',
+        'database' => '',
+        'user' => '',
+        'password' => '',
+    ],
+
+    // Grenzwerte gegen Skripte, wie in der Datenschutzerklärung beschrieben.
+    'max_new_devices_per_day' => 150,
+    'max_votes_per_minute' => 40,
+
+    // Kontaktformular: An diese Adresse gehen die Nachrichten. Leer lassen: die Adresse, die auf der Website steht.
+    'contact_to' => '',
+
+    // Absender der Nachrichten. Am besten ein Postfach auf der Domain der Website, etwa 'website@beispiel.de'
+    // (hPanel → E-Mails). Leer lassen: website@<Domain der Website>.
+    'contact_from' => '',
+
+    // Nur nötig, wenn Nachrichten aus dem Formular nicht ankommen: Versand über ein E-Mail-Postfach statt über
+    // PHP mail(). Bei Hostinger: host 'smtp.hostinger.com', port 465, user = Adresse des Postfachs, password = sein
+    // Passwort. Dann ist dieses Postfach auch der Absender.
+    'smtp' => [
+        'host' => '',
+        'port' => 465,
+        'user' => '',
+        'password' => '',
+    ],
+
+    // Bei Hostinger leer lassen, auch mit dem Hostinger-CDN: Dort kommt die Adresse der Besucher*innen schon an.
+    // Nur eintragen, wenn /api/status darum bittet, und dann genau den Header von dort, etwa 'X-Real-IP'.
+    // Cloudflare wird von selbst erkannt.
+    'ip_header' => '',
+];
