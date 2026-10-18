@@ -29,51 +29,6 @@ function headers(): HeadersInit {
 }
 const fmt = (n: number) => n.toLocaleString("de-DE");
 
-function confetti(canvas: HTMLCanvasElement) {
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return;
-  const dpr = window.devicePixelRatio || 1;
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-  canvas.width = w * dpr;
-  canvas.height = h * dpr;
-  ctx.scale(dpr, dpr);
-  const colors = ["#e4241b", "#ffe14a", "#0f0f0e", "#f4f3ef"];
-  const bits = Array.from({ length: 140 }, () => ({
-    x: w / 2 + (Math.random() - 0.5) * 80,
-    y: h * 0.62,
-    vx: (Math.random() - 0.5) * 16,
-    vy: -Math.random() * 18 - 6,
-    r: Math.random() * Math.PI,
-    vr: (Math.random() - 0.5) * 0.4,
-    s: Math.random() * 8 + 6,
-    c: colors[Math.floor(Math.random() * colors.length)],
-  }));
-  const start = performance.now();
-  const frame = (t: number) => {
-    const age = t - start;
-    ctx.clearRect(0, 0, w, h);
-    for (const b of bits) {
-      b.vy += 0.55;
-      b.vx *= 0.99;
-      b.x += b.vx;
-      b.y += b.vy;
-      b.r += b.vr;
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(b.r);
-      ctx.globalAlpha = Math.max(0, 1 - age / 1800);
-      ctx.fillStyle = b.c;
-      ctx.fillRect(-b.s / 2, -b.s / 4, b.s, b.s / 2);
-      ctx.restore();
-    }
-    if (age < 1800) requestAnimationFrame(frame);
-    else ctx.clearRect(0, 0, w, h);
-  };
-  requestAnimationFrame(frame);
-}
-
 export default function Board() {
   const [data, setData] = useState<ApiState | null>(null);
   const [offline, setOffline] = useState(false);
@@ -82,7 +37,6 @@ export default function Board() {
   const [sort, setSort] = useState<Sort>("flyer");
   const [toast, setToast] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((msg: string) => {
@@ -135,18 +89,17 @@ export default function Board() {
       saveToken(json.deviceToken);
       if (res.status === 429) {
         setData({ ...json, mine: prev });
-        showToast("Von deinem Internet kamen heute schon sehr viele Stimmen. Probier's später nochmal.");
+        showToast("Von deinem Internetanschluss kamen heute schon sehr viele Stimmen. Bitte versuch es morgen noch einmal.");
         return;
       }
       if (!res.ok) throw new Error(String(res.status));
       setData(json);
       const name = CITIES.find((c) => c.id === cityId)?.name ?? "";
-      showToast(prev ? `Gewechselt: du bist in ${name} dabei` : `Du bist in ${name} dabei!`);
+      showToast(prev ? `Gewechselt: du bist in ${name} dabei` : `Du bist in ${name} dabei.`);
       setShareOpen(true);
-      if (!prev && canvasRef.current) confetti(canvasRef.current);
     } catch {
       setData(data);
-      showToast("Hat nicht geklappt. Check dein Netz und tipp nochmal.");
+      showToast("Das hat nicht geklappt. Prüf deine Verbindung und versuch es noch einmal.");
     } finally {
       setBusy(false);
     }
@@ -173,7 +126,7 @@ export default function Board() {
   const mineCity = CITIES.find((c) => c.id === data?.mine);
   const shareUrl = typeof window !== "undefined" ? window.location.origin : "";
   const shareText = mineCity
-    ? `Ich bin am 31.10. ab 14 Uhr in ${mineCity.name} (${mineCity.place}) gegen die Wehrpflicht auf der Straße. Kommst du mit?`
+    ? `Ich bin am 31.10. ab 14 Uhr in ${mineCity.name} (${mineCity.place}) dabei: Protest gegen die Wehrpflicht, für unsere Zukunft. Kommst du mit?`
     : "Am 31.10. ab 14 Uhr: Protest gegen die Wehrpflicht in 21 Städten. Sag, wo du dabei bist:";
 
   const nativeShare = async () => {
@@ -301,7 +254,7 @@ export default function Board() {
       <div className={"share-bar" + (shareOpen && mineCity ? " show" : "")} role="region" aria-label="Teilen">
         <div className="share-inner">
           <span className="share-text">
-            Du bist in <b>{mineCity?.name}</b> dabei. Hol deine Crew dazu!
+            Du bist in <b>{mineCity?.name}</b> dabei. Sag es weiter.
           </span>
           <div className="share-actions">
             <button type="button" className="primary" onClick={nativeShare}>
@@ -328,7 +281,6 @@ export default function Board() {
       <div className={"toast" + (toast ? " show" : "")} role="status" aria-live="polite">
         {toast}
       </div>
-      <canvas ref={canvasRef} className="confetti" aria-hidden="true" />
     </section>
   );
 }

@@ -26,7 +26,7 @@ export async function GET(_req: Request, ctx: { params: Promise<{ city: string }
     "DTEND:20261031T160000Z",
     `SUMMARY:${esc("Protest gegen die Wehrpflicht · " + c.name)}`,
     `LOCATION:${esc(c.place + ", " + c.name)}`,
-    `DESCRIPTION:${esc("Treffpunkt ab 14:00 Uhr. Bleib friedlich, nimm Wasser und deine Crew mit.")}`,
+    `DESCRIPTION:${esc("Treffpunkt ab 14:00 Uhr. Bleib friedlich, nimm Wasser und Freund*innen mit.")}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",
     "ACTION:DISPLAY",
