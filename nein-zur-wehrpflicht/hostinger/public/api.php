@@ -213,11 +213,9 @@ function gzsa_status(): void
     if (!gzsa_https()) {
         $tips[] = 'Die Seite läuft noch ohne HTTPS. Bitte im hPanel unter Sicherheit → SSL das Zertifikat einrichten und „HTTPS erzwingen“ einschalten.';
     }
-    $remote = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR']) && !gzsa_is_internal($remote) && !gzsa_is_cloudflare($remote)
-        && trim((string) gzsa_config()['ip_header']) === '') {
-        $tips[] = 'Diese Anfrage kam über einen Proxy. Läuft die Website hinter einem CDN, bitte in _app/config.php bei ip_header '
-            . 'den Header mit der Adresse der Besucher*innen eintragen, sonst teilen sich alle dieselben Grenzwerte.';
+    $proxy = gzsa_proxy_hint();
+    if ($proxy !== '') {
+        $tips[] = $proxy;
     }
     if (PHP_VERSION_ID < 80100) {
         $tips[] = 'Hier läuft PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '. Empfohlen ist 8.1 oder neuer (hPanel → Erweitert → PHP-Konfiguration).';

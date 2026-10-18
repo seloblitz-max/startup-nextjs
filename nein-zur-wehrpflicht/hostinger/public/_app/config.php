@@ -25,7 +25,8 @@ return [
     'max_new_devices_per_day' => 150,
     'max_votes_per_minute' => 40,
 
-    // Nur hinter einem CDN oder Proxy, das die Adresse der Besucher*innen in einem eigenen Header mitschickt,
-    // etwa 'X-Forwarded-For'. Cloudflare wird von selbst erkannt.
+    // Bei Hostinger leer lassen, auch mit dem Hostinger-CDN: Dort kommt die Adresse der Besucher*innen schon an.
+    // Nur eintragen, wenn /api/status darum bittet, und dann genau den Header von dort, etwa 'X-Real-IP'.
+    // Cloudflare wird von selbst erkannt.
     'ip_header' => '',
 ];

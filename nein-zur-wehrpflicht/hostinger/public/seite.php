@@ -54,11 +54,12 @@ function gzsa_send(string $file, string $ext, int $status): void
         header('Content-Disposition: attachment; filename="protest-' . basename($file, '.ics') . '.ics"');
     }
     // Nie im Server-Cache: Die Adresse hängt vom Aufruf ab. Der Browser fragt kurz nach und bekommt meist 304.
+    // no-transform bittet ein CDN, die Seiten nicht umzuschreiben (etwa zu minifizieren): React erwartet sie genau so.
     header('X-LiteSpeed-Cache-Control: no-cache');
     if ($status !== 200) {
-        header('Cache-Control: no-store');
+        header('Cache-Control: no-store, no-transform');
     } else {
-        header('Cache-Control: public, max-age=0, must-revalidate');
+        header('Cache-Control: public, max-age=0, must-revalidate, no-transform');
         header('ETag: ' . $etag);
         if (gzsa_not_modified($etag)) {
             http_response_code(304);

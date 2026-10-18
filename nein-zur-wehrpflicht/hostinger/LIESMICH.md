@@ -18,8 +18,8 @@
 - **Falls SQLite fehlt:** Meldet `/api/status`, dass `pdo_sqlite` fehlt, die Erweiterung unter *PHP-Konfiguration → PHP-Erweiterungen* einschalten. Oder eine MySQL-Datenbank anlegen (*Datenbanken*) und Datenbank, Benutzer und Passwort im Dateimanager in `_app/config.php` eintragen.
 - **Löschtermin:** Am 14. November 2026 löschen sich die Einträge der Geräte von selbst, beim nächsten Aufruf der Seite. Die Zahlen pro Stadt bleiben stehen. Danach kann der Ordner `gzsa-daten` gelöscht werden.
 - **Datenschutz:** Diese Fassung der Datenschutzerklärung nennt Hostinger als Hoster und Speicherort. Der Vertrag zur Auftragsverarbeitung ist bei Hostinger Teil der Nutzungsbedingungen.
-- **Aktualisieren:** Eine neue ZIP genauso entpacken und alles überschreiben. Steht in `_app/config.php` etwas, die Datei vorher sichern und danach zurückspielen. Die Zusagen bleiben erhalten.
-- **CDN:** Die Seite braucht kein CDN. Ist eines an und zeigt `/api/status` einen Proxy-Hinweis, dem Hinweis folgen.
+- **Aktualisieren:** Eine neue ZIP genauso entpacken und alles überschreiben. Steht in `_app/config.php` etwas, die Datei vorher sichern und danach zurückspielen. Die Zusagen bleiben erhalten. Ist das Hostinger-CDN an, danach dort den Cache leeren, sonst zeigt es Bilder noch bis zu einen Tag in der alten Fassung.
+- **Hostinger-CDN:** Das CDN (*Leistung → CDN*) darf an bleiben, die Abstimmung läuft auch damit. Ist dort bei den Optionen „Smart Image Optimization“ (Bildoptimierung) an, bitte ausschalten: Sie verkleinert Bilder für Handys, dann werden Fotos und Story-Bilder unscharf. Bei einem anderen CDN sagt `/api/status`, ob etwas fehlt.
 
 ## Für Entwickler*innen
 

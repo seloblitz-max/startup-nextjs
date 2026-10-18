@@ -154,40 +154,106 @@ function gzsa_is_cloudflare(string $ip): bool
 /** Lokale oder private Adresse, etwa ein Proxy des Webhosters direkt vor PHP. */
 function gzsa_is_internal(string $ip): bool
 {
-    return filter_var($ip, FILTER_VALIDATE_IP) !== false
-        && filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) === false;
+    return filter_var($ip, FILTER_VALIDATE_IP) !== false && !gzsa_is_public($ip);
 }
 
-function gzsa_first_ip(string $header): string
+function gzsa_is_public(string $ip): bool
 {
-    return trim(explode(',', $header)[0]);
+    return filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE) !== false;
+}
+
+/** Wert eines Request-Headers, etwa X-Real-IP (in PHP HTTP_X_REAL_IP). */
+function gzsa_request_header(string $name): string
+{
+    return (string) ($_SERVER['HTTP_' . strtoupper(str_replace('-', '_', trim($name)))] ?? '');
 }
 
 /**
- * Adresse der Besucher*in. Weitergeleitete Adressen zählen nur, wenn die Anfrage von Cloudflare oder
- * einem internen Proxy kommt. Sonst könnte jedes Skript sich mit einem Header eine neue Adresse geben.
+ * Adresse der Besucher*in aus einem weitergeleiteten Header, leer wenn keine gültige drinsteht. In einer Liste wie
+ * X-Forwarded-For hängt jeder Proxy die Adresse an, von der die Anfrage kam. Darum zählt von rechts die erste
+ * Adresse, die kein Proxy ist (intern oder Cloudflare). Was weiter links steht, kann jede*r selbst mitschicken.
+ */
+function gzsa_forwarded_ip(string $value): string
+{
+    $ips = [];
+    foreach (explode(',', $value) as $part) {
+        $ip = trim($part);
+        // Manche Proxys hängen den Port an, etwa 203.0.113.5:4711 oder [2001:db8::5]:4711.
+        if (preg_match('/^\[([0-9a-f:.]+)\](?::\d+)?\z/i', $ip, $m) || preg_match('/^(\d{1,3}(?:\.\d{1,3}){3}):\d+\z/', $ip, $m)) {
+            $ip = $m[1];
+        }
+        if (filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+            $ips[] = $ip;
+        }
+    }
+    foreach (array_reverse($ips) as $ip) {
+        if (!gzsa_is_internal($ip) && !gzsa_is_cloudflare($ip)) {
+            return $ip;
+        }
+    }
+    // Nur Proxys oder Adressen aus dem eigenen Netz: dann die erste.
+    return $ips[0] ?? '';
+}
+
+/**
+ * Adresse der Besucher*in. Weitergeleitete Adressen zählen nur aus dem Header in config.php oder wenn die Anfrage
+ * von Cloudflare oder einem internen Proxy kommt. Sonst könnte jedes Skript sich mit einem Header eine neue Adresse
+ * geben. Beim Hostinger-CDN steht die Adresse der Besucher*in schon in REMOTE_ADDR.
  */
 function gzsa_client_ip(): string
 {
     $remote = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    $headers = [];
     $own = trim((string) gzsa_config()['ip_header']);
     if ($own !== '') {
-        $value = (string) ($_SERVER['HTTP_' . strtoupper(str_replace('-', '_', $own))] ?? '');
-        if ($value !== '') {
-            return gzsa_first_ip($value);
-        }
+        $headers[] = $own;
     }
-    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && gzsa_is_cloudflare($remote)) {
-        return gzsa_first_ip((string) $_SERVER['HTTP_CF_CONNECTING_IP']);
+    if (gzsa_is_cloudflare($remote)) {
+        $headers[] = 'CF-Connecting-IP';
+    } elseif (gzsa_is_internal($remote)) {
+        array_push($headers, 'X-Forwarded-For', 'X-Real-IP');
     }
-    if (gzsa_is_internal($remote)) {
-        foreach (['HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP'] as $key) {
-            if (!empty($_SERVER[$key])) {
-                return gzsa_first_ip((string) $_SERVER[$key]);
-            }
+    foreach ($headers as $name) {
+        $ip = gzsa_forwarded_ip(gzsa_request_header($name));
+        if ($ip !== '') {
+            return $ip;
         }
     }
     return $remote !== '' ? $remote : 'unknown';
+}
+
+/**
+ * Hinweis für /api/status, wenn PHP hinter einem Proxy oder CDN nur dessen Adresse sieht. Das Hostinger-CDN schickt
+ * die Adresse der Besucher*in in X-Real-IP und X-Forwarded-For mit, und der Server setzt sie schon als REMOTE_ADDR
+ * ein. Dann stimmen beide überein, und es ist nichts zu tun.
+ */
+function gzsa_proxy_hint(): string
+{
+    $own = trim((string) gzsa_config()['ip_header']);
+    if ($own !== '') {
+        return gzsa_forwarded_ip(gzsa_request_header($own)) !== '' ? '' : 'In _app/config.php steht bei ip_header „'
+            . $own . '“, aber diese Anfrage bringt dort keine Adresse mit. Bitte den Eintrag prüfen oder wieder leeren.';
+    }
+    $remote = (string) ($_SERVER['REMOTE_ADDR'] ?? '');
+    if (!gzsa_is_public($remote) || gzsa_is_cloudflare($remote)) {
+        return '';
+    }
+    $suggest = '';
+    foreach (['X-Real-IP', 'X-Forwarded-For'] as $name) {
+        $ip = gzsa_forwarded_ip(gzsa_request_header($name));
+        if (!gzsa_is_public($ip)) {
+            continue;
+        }
+        if (gzsa_network($ip) === gzsa_network($remote)) {
+            return '';
+        }
+        if ($suggest === '') {
+            $suggest = $name;
+        }
+    }
+    return $suggest === '' ? '' : 'Diese Anfrage kam über einen Proxy oder ein CDN, und PHP sieht nur dessen Adresse. '
+        . "Bitte in _app/config.php bei ip_header '" . $suggest . "' eintragen, sonst teilen sich alle Besucher*innen "
+        . 'dieselben Grenzwerte.';
 }
 
 /**
