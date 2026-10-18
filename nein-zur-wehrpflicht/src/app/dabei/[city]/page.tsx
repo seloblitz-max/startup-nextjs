@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const city = CITY_BY_ID[(await params).city];
   if (!city) return {};
   const title = `Ich bin in ${city.name} dabei`;
-  const description = `Nein zur Wehrpflicht: Samstag, 31. Oktober, 14 Uhr, ${city.place} in ${city.name}. Kommst du mit?`;
+  const description = `Gen Z steht auf: Samstag, 31. Oktober, ab 14 Uhr, Treffpunkt ${city.place} in ${city.name}. Unsere Zukunft liegt in unseren Händen. Kommst du mit?`;
   return {
     title,
     description,
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: `${title}. Kommst du mit?`,
       description,
       url: `/dabei/${city.id}`,
-      images: [ogImage(`${city.id}.jpg`, "Einladung zum Protest gegen die Wehrpflicht am 31. Oktober")],
+      images: [ogImage(`${city.id}.jpg`, `Ich bin in ${city.name} dabei: Samstag, 31. Oktober, ab 14 Uhr, Treffpunkt ${city.place}.`)],
     },
   };
 }

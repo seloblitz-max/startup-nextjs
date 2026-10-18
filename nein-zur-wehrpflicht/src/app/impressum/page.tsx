@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export const metadata: Metadata = { title: "Impressum", alternates: { canonical: "/impressum" } };
 
@@ -30,9 +31,10 @@ export default function Impressum() {
 
       <h2>Hinweis</h2>
       <p>
-        Diese Website ist ein privates, nicht kommerzielles Angebot. Die Treffpunkte stammen aus dem öffentlichen Aufruf zum
-        Protest am 31.&nbsp;Oktober. Für die einzelnen Versammlungen sind die jeweiligen Anmelder*innen vor Ort verantwortlich.
-        Die Fotos auf dieser Seite sind Symbolbilder.
+        Diese Website ist ein privates, nicht kommerzielles Angebot. Forderungen, Haltung und Erklärung stammen aus den Papieren
+        von Gen Z regelt (Kontakt: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>). Die Treffpunkte stammen aus dem
+        öffentlichen Aufruf zum Protest am 31.&nbsp;Oktober. Für die einzelnen Versammlungen sind die jeweiligen
+        Anmelder*innen vor Ort verantwortlich.
       </p>
     </LegalPage>
   );

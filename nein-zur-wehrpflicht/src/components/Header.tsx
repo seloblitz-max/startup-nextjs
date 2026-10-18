@@ -1,54 +1,128 @@
 "use client";
 
-import { Ticket } from "@phosphor-icons/react";
-import { useMotionValueEvent, useScroll } from "motion/react";
+import { List, Ticket, X } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useState } from "react";
-import { voteStore } from "@/lib/vote-store";
-import SquirrelMark from "./SquirrelMark";
+import { useEffect, useState } from "react";
 import { fmt } from "@/lib/format";
+import { voteStore } from "@/lib/vote-store";
+import Logo from "./brand/Logo";
+import Wordmark from "./brand/Wordmark";
 import { useVote } from "./vote/VoteProvider";
 
+const NAV = [
+  { href: "#staedte", label: "Städte" },
+  { href: "#forderungen", label: "Forderungen" },
+  { href: "#haltung", label: "Haltung" },
+  { href: "#kontakt", label: "Kontakt" },
+];
+
 export default function Header() {
-  const { scrollY } = useScroll();
   const [solid, setSolid] = useState(false);
-  useMotionValueEvent(scrollY, "change", (y) => setSolid(y > 24));
+  const [open, setOpen] = useState(false);
   const mine = useVote((s) => s.mine);
   const total = useVote((s) => s.total);
   const ready = useVote((s) => s.ready);
 
+  useEffect(() => {
+    const onScroll = () => setSolid(window.scrollY > 16);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    const onWide = () => window.innerWidth >= 1024 && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    window.addEventListener("resize", onWide);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      window.removeEventListener("resize", onWide);
+    };
+  }, [open]);
+
+  const close = () => setOpen(false);
+
   return (
-    <header
-      data-solid={solid || undefined}
-      className="fixed inset-x-0 top-0 z-40 border-b border-transparent transition-[background-color,border-color,backdrop-filter] duration-300 data-[solid]:border-line data-[solid]:bg-ink/85 data-[solid]:backdrop-blur-md"
-    >
-      <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
-        <Link href="/" className="group flex items-center gap-2" aria-label="Gen Z steht auf, zur Startseite">
-          <SquirrelMark className="size-7 text-signal transition-transform duration-300 group-hover:-rotate-6" />
-          <span className="font-display text-[1.35rem] font-extrabold uppercase leading-none tracking-[0.04em]">Gen Z steht auf</span>
+    <header className="site-header" data-solid={solid || undefined} data-open={open || undefined}>
+      <div className="container-page flex h-16 items-center justify-between gap-3">
+        <Link href="/" className="flex items-center gap-2.5" aria-label="Gen Z steht auf, zur Startseite" onClick={close}>
+          <Logo size={36} eager />
+          <Wordmark className="whitespace-nowrap text-[0.875rem] min-[360px]:text-[1.0625rem]" />
         </Link>
-        <nav aria-label="Hauptnavigation" className="flex items-center gap-1 sm:gap-2">
-          <a href="#staedte" className="nav-link hidden lg:inline-flex">Städte</a>
-          <a href="#warum" className="nav-link hidden lg:inline-flex">Warum</a>
-          <a href="#infos" className="nav-link hidden lg:inline-flex">Infos</a>
+
+        <nav aria-label="Hauptnavigation" className="hidden items-center lg:flex">
+          {NAV.map((item) => (
+            <a key={item.href} href={item.href} className="nav-link">
+              {item.label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex items-center gap-2">
           {ready ? (
-            <a href="#staedte" className="hidden items-center gap-2 px-3 font-mono text-[0.72rem] uppercase tracking-[0.12em] text-paper-2 md:inline-flex">
+            <a href="#staedte" className="t-label hidden items-center gap-2 px-2 xl:inline-flex">
               <span className="live-dot" aria-hidden="true" />
               {fmt(total)} dabei
             </a>
           ) : null}
           {mine ? (
-            <button type="button" onClick={voteStore.openSheet} className="btn btn-sm btn-paper">
+            <button type="button" onClick={voteStore.openSheet} className="btn btn-sm btn-light max-lg:hidden">
               <Ticket weight="bold" className="size-4" aria-hidden="true" />
               Dein Ticket
             </button>
           ) : (
-            <a href="#staedte" className="btn btn-sm btn-signal">
+            <a href="#staedte" className="btn btn-sm btn-primary max-lg:hidden">
               Ich bin dabei
             </a>
           )}
-        </nav>
+          {mine ? (
+            <button type="button" onClick={voteStore.openSheet} className="icon-btn lg:hidden" aria-label="Dein Ticket zeigen">
+              <Ticket weight="bold" className="size-5" aria-hidden="true" />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="icon-btn lg:hidden"
+            aria-expanded={open}
+            aria-controls="menu"
+            aria-label={open ? "Menü schließen" : "Menü öffnen"}
+            onClick={() => setOpen((o) => !o)}
+          >
+            {open ? <X weight="bold" className="size-5" aria-hidden="true" /> : <List weight="bold" className="size-5" aria-hidden="true" />}
+          </button>
+        </div>
       </div>
+
+      {open ? (
+        <nav id="menu" aria-label="Menü" className="menu-panel lg:hidden">
+          <div className="container-page pb-6">
+            {NAV.map((item) => (
+              <a key={item.href} href={item.href} className="menu-link" onClick={close}>
+                {item.label}
+              </a>
+            ))}
+            {mine ? (
+              <button
+                type="button"
+                className="btn btn-light mt-6 w-full"
+                onClick={() => {
+                  close();
+                  voteStore.openSheet();
+                }}
+              >
+                <Ticket weight="bold" className="size-5" aria-hidden="true" />
+                Dein Ticket
+              </button>
+            ) : (
+              <a href="#staedte" className="btn btn-primary mt-6 w-full" onClick={close}>
+                Ich bin dabei
+              </a>
+            )}
+          </div>
+        </nav>
+      ) : null}
     </header>
   );
 }

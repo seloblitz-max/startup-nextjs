@@ -1,21 +1,27 @@
 import type { Metadata, Viewport } from "next";
-import { Big_Shoulders, Bricolage_Grotesque, Martian_Mono, Permanent_Marker } from "next/font/google";
+import { BBH_Bartle, Lexend } from "next/font/google";
+import { CITY_COUNT } from "@/lib/cities";
 import { ogImage, SITE_NAME, siteUrl } from "@/lib/site";
 import "./globals.css";
 
-// Alle Schriften werden beim Bauen heruntergeladen und von der eigenen Domain ausgeliefert.
-const display = Big_Shoulders({ subsets: ["latin"], variable: "--nf-display", display: "swap", adjustFontFallback: false });
-const body = Bricolage_Grotesque({ subsets: ["latin"], variable: "--nf-body", display: "swap" });
-const mono = Martian_Mono({ subsets: ["latin"], variable: "--nf-mono", display: "swap", preload: false });
-const marker = Permanent_Marker({ subsets: ["latin"], weight: "400", variable: "--nf-marker", display: "swap", preload: false });
+// Schriften aus dem Designguide. Sie werden beim Bauen heruntergeladen und von der eigenen Domain ausgeliefert.
+const lexend = Lexend({ subsets: ["latin", "latin-ext"], variable: "--nf-lexend", display: "swap" });
+// BBH Bartle hat keine Messwerte für eine angepasste Ersatzschrift, Next würde sonst bei jedem Bauen warnen.
+const bartle = BBH_Bartle({
+  weight: "400",
+  subsets: ["latin"],
+  variable: "--nf-bartle",
+  display: "swap",
+  preload: false,
+  adjustFontFallback: false,
+});
 
-const description =
-  "Protest gegen die Wehrpflicht am Samstag, 31. Oktober, ab 14 Uhr in 21 Städten. Sag, wo du dabei bist, und sieh live, wie viele kommen.";
+const description = `Unsere Zukunft liegt in unseren Händen. Am Samstag, 31. Oktober, ab 14 Uhr gehen wir in ${CITY_COUNT} Städten auf die Straße: für Bildung, Gesundheit und ein bezahlbares Leben, gegen Wehrpflicht und Sparkurs auf unserem Rücken.`;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl()),
   title: {
-    default: "Nein zur Wehrpflicht: Protest am 31. Oktober in 21 Städten",
+    default: `Gen Z steht auf: Protest am 31. Oktober in ${CITY_COUNT} Städten`,
     template: `%s | ${SITE_NAME}`,
   },
   description,
@@ -24,9 +30,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "de_DE",
     siteName: SITE_NAME,
-    title: "Nein zur Wehrpflicht. 31. Oktober, 14 Uhr, 21 Städte.",
-    description: "Sag, wo du dabei bist, und sieh live, wie viele kommen.",
-    images: [ogImage("start.jpg", "Nein zur Wehrpflicht. Protest am Samstag, 31. Oktober, ab 14 Uhr in 21 Städten.")],
+    title: `Gen Z steht auf. 31. Oktober, 14 Uhr, ${CITY_COUNT} Städte.`,
+    description: "Unsere Zukunft liegt in unseren Händen. Sag, wo du dabei bist, und sieh live, wie viele kommen.",
+    images: [ogImage("start.jpg", `Gen Z steht auf. Protest am Samstag, 31. Oktober, ab 14 Uhr in ${CITY_COUNT} Städten.`)],
   },
   twitter: { card: "summary_large_image" },
   formatDetection: { telephone: false, email: false, address: false },
@@ -34,7 +40,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#0c0b0a",
+  themeColor: "#212121",
   colorScheme: "dark",
   width: "device-width",
   initialScale: 1,
@@ -43,7 +49,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="de" className={`${display.variable} ${body.variable} ${mono.variable} ${marker.variable}`}>
+    <html lang="de" className={`${lexend.variable} ${bartle.variable}`}>
       <body>
         <a href="#inhalt" className="skip-link">
           Zum Inhalt springen

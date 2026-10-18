@@ -1,15 +1,14 @@
 "use client";
 
-import { Check, CircleNotch, MagnifyingGlass, WarningCircle, WifiSlash, X } from "@phosphor-icons/react";
+import { CaretDown, MagnifyingGlass, NavigationArrow, WarningCircle, WifiSlash, X } from "@phosphor-icons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { CITIES, type City } from "@/lib/cities";
+import { byViews, CITIES, CITY_BY_ID, CITY_COUNT, LEAD_CITIES, mapsUrl, type City } from "@/lib/cities";
 import { cn, fmt } from "@/lib/format";
-import type { Counts } from "@/lib/store";
 import { voteStore } from "@/lib/vote-store";
-import { castVote, useVote } from "./VoteProvider";
-
-type Sort = "az" | "top";
+import { TelegramLink } from "./CityPanel";
+import VoteButton from "./VoteButton";
+import { useVote } from "./VoteProvider";
 
 // "Köln", "koln" und "koeln" sollen alle Köln finden.
 const fold = (s: string) =>
@@ -23,131 +22,109 @@ const HAY: Record<string, string> = Object.fromEntries(
   }),
 );
 
-const FLYER: Record<string, number> = Object.fromEntries(CITIES.map((c, i) => [c.id, i]));
-const AZ = [...CITIES].sort((a, b) => a.name.localeCompare(b.name, "de")).map((c) => c.id);
-const byTop = (counts: Counts) =>
-  [...CITIES]
-    .sort((a, b) => (counts[b.id] ?? 0) - (counts[a.id] ?? 0) || FLYER[a.id] - FLYER[b.id])
-    .map((c) => c.id);
-const BY_ID: Record<string, City> = Object.fromEntries(CITIES.map((c) => [c.id, c]));
-
-const SORTS: Array<[Sort, string]> = [
-  ["az", "A bis Z"],
-  ["top", "Beliebteste"],
-];
-// Solange jemand gerade in der Liste tippt, springt die Reihenfolge nicht um.
-const HOLD_MS = 2500;
+/** So viele weitere Städte sind zu sehen, bevor man „alle zeigen“ antippt. */
+const FIRST = 6;
 const ROW_SPRING = { type: "spring" as const, stiffness: 420, damping: 40 };
+const LEAD_IDS = LEAD_CITIES.map((c) => c.id);
 
+/**
+ * Liste aller Städte: oben die fünf Städte von Gen Z regelt (feste Reihenfolge), darunter alle weiteren, sortiert nach
+ * Aufrufen. Die Reihenfolge steht nach dem ersten Zählerstand fest, damit beim Tippen nichts verrutscht.
+ */
 export default function CityList() {
   const counts = useVote((s) => s.counts);
+  const views = useVote((s) => s.views);
+  const ready = useVote((s) => s.ready);
   const mine = useVote((s) => s.mine?.city ?? null);
-  const pending = useVote((s) => s.pending);
   const focus = useVote((s) => s.focus);
   const setup = useVote((s) => s.setup);
   const live = useVote((s) => s.live);
-  const ready = useVote((s) => s.ready);
 
   const [query, setQuery] = useState("");
-  const [sort, setSort] = useState<Sort>("az");
-  const [order, setOrder] = useState<string[]>(AZ);
-  const touched = useRef(0);
+  const [all, setAll] = useState(false);
+  const [others, setOthers] = useState<string[]>(() => byViews(views).map((c) => c.id));
+  const frozen = useRef(ready);
 
   useEffect(() => {
-    if (sort === "az") {
-      setOrder(AZ);
-      return;
-    }
-    const apply = () => setOrder(byTop(voteStore.get().counts));
-    const wait = HOLD_MS - (Date.now() - touched.current);
-    if (wait <= 0) {
-      apply();
-      return;
-    }
-    const t = setTimeout(apply, wait);
-    return () => clearTimeout(t);
-  }, [sort, counts]);
+    if (frozen.current || !ready) return;
+    frozen.current = true;
+    setOthers(byViews(views).map((c) => c.id));
+  }, [ready, views]);
 
   const q = fold(query.trim());
-  const visible = q ? order.filter((id) => HAY[id].includes(q)) : order;
-  const max = Math.max(1, ...Object.values(counts));
+  const match = (id: string) => !q || HAY[id].includes(q);
+  const lead = LEAD_IDS.filter(match);
+  const rest = others.filter(match);
+  // Eingeklappt: die beliebtesten weiteren Städte, dazu immer die eigene und die gerade gewählte.
+  const shown = q || all ? rest : rest.filter((id, i) => i < FIRST || id === mine || id === focus);
+  const hidden = rest.length - shown.length;
+
+  const row = (id: string) => (
+    <Row key={id} city={CITY_BY_ID[id]} n={counts[id] ?? 0} ready={ready} mine={mine === id} open={focus === id} />
+  );
 
   return (
     <div>
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="search">
-          <MagnifyingGlass weight="bold" className="size-5 shrink-0 text-mute" aria-hidden="true" />
-          <span className="sr-only">Stadt oder Treffpunkt suchen</span>
-          <input
-            type="search"
-            inputMode="search"
-            enterKeyHint="search"
-            autoComplete="off"
-            autoCorrect="off"
-            spellCheck={false}
-            placeholder="Stadt oder Treffpunkt suchen"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            onKeyDown={(e) => e.key === "Escape" && setQuery("")}
-          />
-          {query ? (
-            <button type="button" className="search-clear" onClick={() => setQuery("")} aria-label="Suche löschen">
-              <X weight="bold" className="size-4" aria-hidden="true" />
-            </button>
-          ) : null}
-        </label>
-        <div className="segmented" role="group" aria-label="Sortierung">
-          {SORTS.map(([id, label]) => (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={sort === id}
-              onClick={() => {
-                touched.current = 0;
-                setSort(id);
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
+      <label className="search">
+        <MagnifyingGlass weight="bold" className="size-5 shrink-0 text-mute" aria-hidden="true" />
+        <span className="sr-only">Stadt oder Treffpunkt suchen</span>
+        <input
+          type="search"
+          inputMode="search"
+          enterKeyHint="search"
+          autoComplete="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="Stadt oder Treffpunkt suchen"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={(e) => e.key === "Escape" && setQuery("")}
+        />
+        {query ? (
+          <button type="button" className="search-clear" onClick={() => setQuery("")} aria-label="Suche löschen">
+            <X weight="bold" className="size-4" aria-hidden="true" />
+          </button>
+        ) : null}
+      </label>
 
       {!setup ? (
-        <Notice icon={<WarningCircle weight="fill" className="size-5 shrink-0 text-signal-hi" aria-hidden="true" />}>
+        <Notice icon={<WarningCircle weight="fill" className="size-5 shrink-0 text-orange" aria-hidden="true" />}>
           Die Abstimmung startet in Kürze. Schau gleich noch einmal vorbei.
         </Notice>
       ) : !live && ready ? (
-        <Notice icon={<WifiSlash weight="bold" className="size-5 shrink-0 text-paper-2" aria-hidden="true" />}>
+        <Notice icon={<WifiSlash weight="bold" className="size-5 shrink-0 text-soft" aria-hidden="true" />}>
           Keine Verbindung. Die Zahlen sind vielleicht nicht ganz aktuell.
         </Notice>
       ) : null}
 
-      <ul className="relative mt-5 border-t border-line" onPointerDownCapture={() => (touched.current = Date.now())}>
-        <AnimatePresence initial={false} mode="popLayout">
-          {visible.map((id) => (
-            <Row
-              key={id}
-              city={BY_ID[id]}
-              n={counts[id] ?? 0}
-              ready={ready}
-              max={max}
-              rank={sort === "top" ? order.indexOf(id) + 1 : 0}
-              mine={mine}
-              pending={pending}
-              focused={focus === id}
-            />
-          ))}
-        </AnimatePresence>
-      </ul>
+      {lead.length ? (
+        <Group title={`Unsere ${LEAD_IDS.length} Städte`} note="Hier organisiert Gen Z regelt Inhalte und Ablauf." lead>
+          {lead.map(row)}
+        </Group>
+      ) : null}
 
-      {visible.length === 0 ? (
+      {rest.length ? (
+        <Group title="Weitere Städte" note="Auf der Plattform dabei, sortiert nach Aufrufen.">
+          <AnimatePresence initial={false} mode="popLayout">
+            {shown.map(row)}
+          </AnimatePresence>
+        </Group>
+      ) : null}
+
+      {hidden > 0 ? (
+        <button type="button" className="btn btn-quiet mt-4 w-full" onClick={() => setAll(true)}>
+          Alle {rest.length} weiteren Städte zeigen
+          <CaretDown weight="bold" className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+
+      {!lead.length && !rest.length ? (
         <div className="py-10 text-center">
-          <p className="font-display text-3xl font-extrabold uppercase">Keine Stadt gefunden</p>
-          <p className="mx-auto mt-2 max-w-[22rem] text-paper-2">
-            Der Protest läuft in 21 Städten. Vielleicht ist eine in deiner Nähe dabei.
+          <p className="t-h4">Keine Stadt gefunden</p>
+          <p className="mx-auto mt-2 max-w-[22rem] text-soft">
+            Der Protest läuft in {CITY_COUNT} Städten. Vielleicht ist eine in deiner Nähe dabei.
           </p>
-          <button type="button" className="btn btn-sm btn-ghost mt-5" onClick={() => setQuery("")}>
+          <button type="button" className="btn btn-sm btn-quiet mt-5" onClick={() => setQuery("")}>
             Alle Städte zeigen
           </button>
         </div>
@@ -156,9 +133,24 @@ export default function CityList() {
   );
 }
 
+function Group({ title, note, lead = false, children }: { title: string; note: string; lead?: boolean; children: ReactNode }) {
+  return (
+    <section className="mt-8" aria-label={title}>
+      <div className="flex items-baseline justify-between gap-4 border-b border-line pb-3">
+        <h3 className="t-h4 flex items-center gap-2.5">
+          <span className={cn("legend-dot mt-0", lead && "is-lead")} aria-hidden="true" />
+          {title}
+        </h3>
+      </div>
+      <p className="mt-3 text-soft">{note}</p>
+      <ul className="relative mt-2">{children}</ul>
+    </section>
+  );
+}
+
 function Notice({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
-    <p className="mt-4 flex items-start gap-3 rounded-sm border border-line bg-ink-2 px-4 py-3 text-sm text-paper-2" role="status">
+    <p className="card mt-4 flex items-start gap-3 px-4 py-3" role="status">
       {icon}
       <span>{children}</span>
     </p>
@@ -170,24 +162,18 @@ function Row({
   city,
   n,
   ready,
-  max,
-  rank,
   mine,
-  pending,
-  focused,
+  open,
 }: {
   ref?: React.Ref<HTMLLIElement>;
   city: City;
   n: number;
   /** Erst wenn Zahlen da sind, wird gezählt. Davor ein Strich statt einer falschen Null. */
   ready: boolean;
-  max: number;
-  rank: number;
-  mine: string | null;
-  pending: string | null;
-  focused: boolean;
+  mine: boolean;
+  open: boolean;
 }) {
-  const isMine = mine === city.id;
+  const count = ready ? fmt(n) : "–";
   return (
     <motion.li
       ref={ref}
@@ -196,66 +182,60 @@ function Row({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ layout: ROW_SPRING, opacity: { duration: 0.18 } }}
-      className={cn("city-row", rank > 0 && "with-rank", isMine && "is-mine")}
-      data-focus={focused || undefined}
+      className={cn("city-row", city.lead && "is-lead", mine && "is-mine")}
+      data-selected={open || undefined}
     >
-      {rank > 0 ? <span className={cn("city-rank", rank <= 3 && n > 0 && "is-top")}>{String(rank).padStart(2, "0")}</span> : null}
-      <div className="min-w-0">
-        <p className="city-name">{city.name}</p>
-        <p className="city-place">{city.place}</p>
-      </div>
-      <p className="city-count">
-        {ready ? <Ticker n={n} /> : <span className="text-mute">–</span>}
-        <span className="city-count-label">dabei</span>
+      <span className="city-dot" aria-hidden="true" />
+      <button
+        type="button"
+        className="city-pick"
+        aria-expanded={open}
+        onClick={() => {
+          voteStore.setFocus(open ? null : city.id);
+          if (!open) voteStore.trackView(city.id);
+        }}
+      >
+        <span className="city-name">{city.name}</span>
+        <span className="city-place">
+          {city.place}
+          <span className="sm:hidden"> · {count} dabei</span>
+        </span>
+      </button>
+      <p className="city-count max-sm:hidden" aria-label={`${count} dabei`}>
+        <Ticker value={count} />
+        <span className="t-label font-normal text-soft">dabei</span>
       </p>
-      <VoteButton city={city} mine={mine} pending={pending} />
-      <span className="city-bar" style={{ transform: `scaleX(${n / max})` }} aria-hidden="true" />
+      <VoteButton city={city} small />
+      {open ? (
+        <div className="flex flex-wrap gap-x-5 gap-y-2 pb-1 [grid-column:2/-1]">
+          <span className="text-soft">Samstag, 31.10., ab 14 Uhr</span>
+          <a href={mapsUrl(city)} target="_blank" rel="noopener noreferrer" className="link-quiet inline-flex items-center gap-1.5">
+            <NavigationArrow weight="bold" className="size-4" aria-hidden="true" />
+            Route
+          </a>
+          <TelegramLink city={city} />
+        </div>
+      ) : null}
     </motion.li>
   );
 }
 
 /** Zahl, die bei jeder Änderung von oben hereinrollt. */
-function Ticker({ n }: { n: number }) {
+function Ticker({ value }: { value: string }) {
   return (
-    <span className="inline-grid overflow-hidden">
+    <span className="inline-grid overflow-hidden" aria-hidden="true">
       <AnimatePresence initial={false}>
         <motion.span
-          key={n}
+          key={value}
           className="col-start-1 row-start-1"
           initial={{ y: "-100%" }}
           animate={{ y: "0%" }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", stiffness: 380, damping: 32 }}
         >
-          {fmt(n)}
+          {value}
         </motion.span>
       </AnimatePresence>
     </span>
-  );
-}
-
-function VoteButton({ city, mine, pending }: { city: City; mine: string | null; pending: string | null }) {
-  if (mine === city.id) {
-    return (
-      <button type="button" className="btn btn-sm btn-paper city-btn" onClick={voteStore.openSheet}>
-        <Check weight="bold" className="size-4" aria-hidden="true" />
-        Dabei
-        <span className="sr-only">: Ticket für {city.name} zeigen</span>
-      </button>
-    );
-  }
-  const busy = pending === city.id;
-  return (
-    <button
-      type="button"
-      className={cn("btn btn-sm city-btn", mine ? "btn-ghost" : "btn-outline")}
-      disabled={!!pending}
-      aria-busy={busy || undefined}
-      onClick={() => void castVote(city.id)}
-    >
-      {busy ? <CircleNotch weight="bold" className="size-4 animate-spin" aria-hidden="true" /> : null}
-      {mine ? "Wechseln" : "Ich bin dabei"}
-      <span className="sr-only">{mine ? ` zu ${city.name}` : `: ${city.name}`}</span>
-    </button>
   );
 }

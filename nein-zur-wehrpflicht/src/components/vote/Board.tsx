@@ -1,38 +1,72 @@
-import Reveal from "@/components/Reveal";
+import { MapPinPlus } from "@phosphor-icons/react/ssr";
+import TopicLink from "@/components/contact/TopicLink";
+import { CITY_COUNT, LEAD_CITIES } from "@/lib/cities";
 import CityList from "./CityList";
-import SpikeMap from "./SpikeMap";
+import CityMap from "./CityMap";
+import CityPanel from "./CityPanel";
 import TotalStat from "./TotalStat";
+
+function MapLegend() {
+  return (
+    <div>
+      <h3 className="t-label font-bold text-soft">Legende</h3>
+      <ul className="mt-3 grid gap-3">
+        <li className="flex gap-3">
+          <span className="legend-dot is-lead" aria-hidden="true" />
+          <span>
+            <strong className="font-bold text-orange">Orange:</strong> Städte, für die wir hauptverantwortlich sind (Inhalte,
+            Organisation)
+          </span>
+        </li>
+        <li className="flex gap-3">
+          <span className="legend-dot" aria-hidden="true" />
+          <span>
+            <strong className="font-bold">Weiß:</strong> weitere Städte auf der Plattform
+          </span>
+        </li>
+      </ul>
+      <p className="mt-4 flex gap-3 border-t border-mark-2 pt-4">
+        <MapPinPlus weight="bold" className="mt-0.5 size-5 shrink-0 text-soft" aria-hidden="true" />
+        <span>
+          Deine Stadt fehlt auf der Karte?{" "}
+          <TopicLink topic="stadt" className="link">
+            Dann meld dich bei uns.
+          </TopicLink>
+        </span>
+      </p>
+    </div>
+  );
+}
 
 export default function Board() {
   return (
-    <section id="staedte" aria-labelledby="staedte-h" className="relative border-t border-line bg-ink-2">
-      <div className="mx-auto max-w-[1320px] px-4 pb-20 pt-16 sm:px-6 lg:px-10 lg:pb-28 lg:pt-24">
-        <Reveal as="header" className="grid gap-8 lg:grid-cols-12 lg:items-end lg:gap-10">
+    <section id="staedte" aria-labelledby="staedte-h" className="section">
+      <div className="container-page">
+        <header className="grid gap-8 lg:grid-cols-12 lg:items-end">
           <div className="lg:col-span-7">
             <p className="eyebrow">Live-Abstimmung</p>
-            <h2 id="staedte-h" className="section-title mt-4">
-              Wo bist du <span className="text-signal">dabei?</span>
+            <h2 id="staedte-h" className="t-h2 mt-3">
+              Wo bist du dabei?
             </h2>
-            <p className="mt-5 max-w-[34rem] text-[1.05rem] leading-relaxed text-paper-2">
-              Tipp auf deine Stadt. Jedes Gerät zählt einmal, und alle sehen live, wie viele kommen.
+            <p className="mt-4 max-w-[38rem]">
+              Tipp auf deine Stadt und sag zu. Jedes Gerät zählt einmal, und alle sehen live, wie viele kommen. In{" "}
+              {LEAD_CITIES.length} von {CITY_COUNT} Städten organisieren wir den Protest selbst.
             </p>
           </div>
           <div className="lg:col-span-5 lg:justify-self-end">
             <TotalStat />
           </div>
-        </Reveal>
+        </header>
 
-        <div className="mt-12 grid gap-14 lg:mt-16 lg:grid-cols-12 lg:gap-10">
-          <div className="lg:col-span-5">
-            <div className="lg:sticky lg:top-24">
-              <p className="mb-4 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-mute">Alle 21 Treffpunkte</p>
-              <SpikeMap />
-              <p className="mt-4 text-center text-sm text-mute">
-                Je höher die Spitze, desto mehr sind dabei. Tipp auf eine Stadt, dann siehst du den Treffpunkt.
-              </p>
-            </div>
+        <div className="board-grid mt-10 lg:mt-14">
+          <div className="board-map">
+            <CityMap />
           </div>
-          <div className="lg:col-span-7">
+          <div className="board-aside">
+            <MapLegend />
+            <CityPanel />
+          </div>
+          <div className="board-list">
             <CityList />
           </div>
         </div>

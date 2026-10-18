@@ -12,10 +12,10 @@ export default function Toasts() {
       toastOptions={{ classNames: { toast: "toast", title: "toast-title", actionButton: "toast-action" } }}
       style={
         {
-          "--normal-bg": "#1c1a18",
-          "--normal-border": "#3a3632",
-          "--normal-text": "#f3efe6",
-          "--border-radius": "10px",
+          "--normal-bg": "#2a2a2a",
+          "--normal-border": "#3d3d3d",
+          "--normal-text": "#ffffff",
+          "--border-radius": "6px",
         } as React.CSSProperties
       }
     />

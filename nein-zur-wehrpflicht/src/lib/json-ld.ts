@@ -1,15 +1,16 @@
 import { CITIES, EVENT_END, EVENT_START_ISO } from "./cities";
-import { pagePath, SITE_NAME, siteUrl } from "./site";
+import { pagePath, siteUrl } from "./site";
 
-/** Strukturierte Daten für Suchmaschinen: die 21 Proteste als Events. */
+/** Strukturierte Daten für Suchmaschinen: alle Proteste als Events. Veranstalter steht nur bei den eigenen Städten. */
 export function eventsJsonLd() {
   const url = siteUrl();
   const data = {
     "@context": "https://schema.org",
     "@graph": CITIES.map((c) => ({
       "@type": "Event",
-      name: `Protest gegen die Wehrpflicht in ${c.name}`,
-      description: "Gen Z steht auf: Nein zur Wehrpflicht. Für unsere Zukunft, gemeinsam für Deutschland.",
+      name: `Gen Z steht auf: Protest in ${c.name}`,
+      description:
+        "Bundesweiter Protest der Generation Z. Unsere Zukunft liegt in unseren Händen: für Bildung, Gesundheit und ein bezahlbares Leben, gegen Wehrpflicht und Sparkurs auf unserem Rücken.",
       startDate: EVENT_START_ISO,
       endDate: new Date(EVENT_END).toISOString(),
       eventStatus: "https://schema.org/EventScheduled",
@@ -22,7 +23,7 @@ export function eventsJsonLd() {
         name: c.place,
         address: { "@type": "PostalAddress", addressLocality: c.name, addressCountry: "DE" },
       },
-      organizer: { "@type": "Organization", name: SITE_NAME, url },
+      ...(c.lead ? { organizer: { "@type": "Organization", name: "Gen Z regelt", url } } : {}),
     })),
   };
   return JSON.stringify(data).replace(/</g, "\\u003c");

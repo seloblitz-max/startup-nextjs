@@ -12,15 +12,17 @@ import {
   WhatsappLogo,
   X,
 } from "@phosphor-icons/react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { Drawer } from "vaul";
 import { CITY_BY_ID, mapsUrl, type City } from "@/lib/cities";
 import { cn, fmt } from "@/lib/format";
 import { pagePath } from "@/lib/site";
 import { composeStory, storyHost } from "@/lib/story-image";
+import { blackWidth } from "@/lib/type-metrics";
 import { voteStore } from "@/lib/vote-store";
-import SquirrelMark from "@/components/SquirrelMark";
+import Logo from "@/components/brand/Logo";
+import { TelegramLink } from "./CityPanel";
 import { useVote, withdrawVote } from "./VoteProvider";
 
 /** Ticket nach der Zusage: zeigt Stadt und Nummer und macht das Weitersagen leicht. */
@@ -48,7 +50,7 @@ export default function TicketSheet() {
 }
 
 function shareText(city: City) {
-  return `Ich bin am 31.10. um 14 Uhr in ${city.name} dabei. Nein zur Wehrpflicht! Kommst du mit?`;
+  return `Ich bin am 31.10. ab 14 Uhr in ${city.name} dabei, Treffpunkt ${city.place}. Unsere Zukunft liegt in unseren Händen. Kommst du mit?`;
 }
 
 function inviteUrl(city: City) {
@@ -154,7 +156,7 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
 
   async function shareNative() {
     try {
-      await navigator.share({ title: "Nein zur Wehrpflicht", text: shareText(city), url: inviteUrl(city) });
+      await navigator.share({ title: "Gen Z steht auf", text: shareText(city), url: inviteUrl(city) });
     } catch {}
   }
 
@@ -175,10 +177,10 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
     <div className="sheet-scroll">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <Drawer.Title className="font-display text-[2.75rem] font-black uppercase leading-[0.88] sm:text-[3.25rem]">
-            Du bist <span className="text-signal">dabei.</span>
+          <Drawer.Title className="t-h2">
+            Du bist <span className="text-orange">dabei.</span>
           </Drawer.Title>
-          <Drawer.Description className="mt-3 max-w-[24rem] text-paper-2">
+          <Drawer.Description className="mt-2 max-w-[24rem]">
             Samstag, 31. Oktober, ab 14 Uhr in {city.name}. Sag es weiter, zusammen sind wir lauter.
           </Drawer.Description>
         </div>
@@ -190,7 +192,7 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
       <Ticket city={city} rank={rank} />
 
       <div className="mt-6 grid gap-3">
-        <button type="button" className="btn btn-lg btn-signal w-full" onClick={shareStory} aria-busy={busy || undefined}>
+        <button type="button" className="btn btn-lg btn-primary w-full" onClick={shareStory} aria-busy={busy || undefined}>
           {busy ? (
             <CircleNotch weight="bold" className="size-5 animate-spin" aria-hidden="true" />
           ) : (
@@ -198,37 +200,43 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
           )}
           Story-Bild teilen
         </button>
-        <div className="grid grid-cols-2 gap-3">
-          <a className="btn btn-ghost" href={whatsapp} target="_blank" rel="noopener noreferrer">
+        {/* Wenig Innenabstand, damit „Link kopieren“ auch auf schmalen Handys in eine Zeile passt. Unter 360 px untereinander. */}
+        <div className="grid gap-3 min-[360px]:grid-cols-2 [&>.btn]:gap-1.5 [&>.btn]:px-2.5">
+          <a className="btn btn-quiet" href={whatsapp} target="_blank" rel="noopener noreferrer">
             <WhatsappLogo weight="bold" className="size-5" aria-hidden="true" />
             WhatsApp
           </a>
-          <button type="button" className="btn btn-ghost" onClick={copyLink}>
+          <button type="button" className="btn btn-quiet" onClick={copyLink}>
             {copied ? (
-              <Check weight="bold" className="size-5 text-signal-hi" aria-hidden="true" />
+              <Check weight="bold" className="size-5 text-orange" aria-hidden="true" />
             ) : (
               <LinkSimple weight="bold" className="size-5" aria-hidden="true" />
             )}
             {copied ? "Kopiert" : "Link kopieren"}
           </button>
-          <a className="btn btn-ghost" href={`/kalender/${city.id}.ics`}>
+          <a className="btn btn-quiet" href={`/kalender/${city.id}.ics`}>
             <CalendarPlus weight="bold" className="size-5" aria-hidden="true" />
             Kalender
           </a>
-          <a className="btn btn-ghost" href={mapsUrl(city)} target="_blank" rel="noopener noreferrer">
+          <a className="btn btn-quiet" href={mapsUrl(city)} target="_blank" rel="noopener noreferrer">
             <NavigationArrow weight="bold" className="size-5" aria-hidden="true" />
             Route
           </a>
         </div>
         {canShare ? (
-          <button type="button" className="btn btn-ghost w-full" onClick={shareNative}>
+          <button type="button" className="btn btn-quiet w-full" onClick={shareNative}>
             <ShareNetwork weight="bold" className="size-5" aria-hidden="true" />
             Mehr Möglichkeiten zum Teilen
           </button>
         ) : null}
       </div>
 
-      <p className="mt-6 text-sm leading-relaxed text-mute">
+      {city.lead ? (
+        <div className="mt-3">
+          <TelegramLink city={city} button />
+        </div>
+      ) : null}
+      <p className="mt-6 text-soft">
         Falsche Stadt? Tipp in der Liste einfach auf eine andere. Deine Zusage zieht mit um und zählt weiter nur einmal.
       </p>
       <Withdraw />
@@ -240,7 +248,7 @@ function Withdraw() {
   const [ask, setAsk] = useState(false);
   if (!ask) {
     return (
-      <p className="mt-2 text-sm text-mute">
+      <p className="mt-2 text-soft">
         Doch keine Zeit?{" "}
         <button type="button" className="link-quiet" onClick={() => setAsk(true)}>
           Zusage zurückziehen
@@ -249,15 +257,15 @@ function Withdraw() {
     );
   }
   return (
-    <div className="mt-4 rounded-sm border border-line-2 p-4" role="group" aria-label="Zusage zurückziehen">
-      <p className="text-sm leading-relaxed text-paper-2">
+    <div className="card mt-4 p-4" role="group" aria-label="Zusage zurückziehen">
+      <p>
         Willst du deine Zusage wirklich zurückziehen? Du kannst später jederzeit wieder zusagen.
       </p>
       <div className="mt-4 flex flex-wrap gap-3">
-        <button type="button" className="btn btn-sm btn-paper" onClick={() => setAsk(false)} autoFocus>
+        <button type="button" className="btn btn-sm btn-light" onClick={() => setAsk(false)} autoFocus>
           Ich bleibe dabei
         </button>
-        <button type="button" className="btn btn-sm btn-ghost" onClick={() => void withdrawVote()}>
+        <button type="button" className="btn btn-sm btn-quiet" onClick={() => void withdrawVote()}>
           Ja, zurückziehen
         </button>
       </div>
@@ -268,28 +276,42 @@ function Withdraw() {
 function Ticket({ city, rank }: { city: City; rank: number }) {
   const nr = fmt(rank);
   const long = city.name.length > 10;
+  // Breite des längsten Worts in em: Auf schmalen Handys wird der Name so weit kleiner, dass kein Wort umbricht.
+  const em = Math.max(...city.name.split(" ").map(blackWidth));
   return (
     <div
       className="ticket mt-6"
       role="img"
-      aria-label={`Dein Ticket: ${city.name}, ${city.place}, Samstag 31. Oktober, 14 Uhr. Du bist Nummer ${nr}.`}
+      aria-label={`Dein Ticket: ${city.name}, Treffpunkt ${city.place}, Samstag 31. Oktober, ab 14 Uhr. Du bist Nummer ${nr}.`}
     >
       <div className="ticket-main">
-        <p className="ticket-kicker">Nein zur Wehrpflicht</p>
-        <p className={cn("ticket-city", long && "is-long")}>{city.name}</p>
-        <p className="ticket-place">
-          <MapPin weight="fill" className="size-4 shrink-0 text-signal-lo" aria-hidden="true" />
-          {city.place}
+        <p className="t-label font-bold">Gen Z steht auf · 31.10.2026</p>
+        <p className={cn("ticket-city", long && "is-long")} style={{ "--em": em.toFixed(2) } as CSSProperties}>
+          {city.name}
         </p>
+        {city.lead ? <p className="t-label mt-1">Organisiert von Gen Z regelt</p> : null}
+        <div className="ticket-place">
+          <p className="t-label">Treffpunkt</p>
+          <p className="mt-1 flex items-start gap-1.5 text-[1.25rem] font-bold leading-7">
+            <MapPin weight="fill" className="mt-1 size-5 shrink-0 text-orange" aria-hidden="true" />
+            {city.place}
+          </p>
+        </div>
         <div className="ticket-meta">
-          <span>Sa 31.10.</span>
-          <span>14:00 Uhr</span>
+          <p>
+            <span className="t-label block">Datum</span>
+            <span className="font-bold">Sa, 31.10.</span>
+          </p>
+          <p>
+            <span className="t-label block">Start</span>
+            <span className="font-bold">14:00 Uhr</span>
+          </p>
         </div>
       </div>
       <div className="ticket-stub">
-        <span className="ticket-nr-label">Nr.</span>
+        <span className="t-label font-bold">Nr.</span>
         <span className={cn("ticket-nr", nr.length > 3 && "is-mid", nr.length > 5 && "is-long")}>{nr}</span>
-        <SquirrelMark className="size-7" />
+        <Logo size={40} badge />
       </div>
     </div>
   );

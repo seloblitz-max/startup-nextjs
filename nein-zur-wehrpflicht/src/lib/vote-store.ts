@@ -6,6 +6,8 @@ export type VoteState = {
   counts: Counts;
   total: number;
   v: number;
+  /** Aufrufe pro Stadt, für die Reihenfolge der Liste */
+  views: Counts;
   /** Es gibt einen Zählerstand (vom Server gerendert oder geladen). */
   ready: boolean;
   /** Letzte Abfrage hat geklappt. */
@@ -40,6 +42,7 @@ export function initialState(snap: Snapshot | null, invite: string | null): Vote
     counts: snap?.counts ?? {},
     total: snap?.total ?? 0,
     v: snap?.v ?? 0,
+    views: snap?.views ?? {},
     ready: !!snap,
     live: !!snap,
     setup: true,
@@ -100,7 +103,27 @@ function applySnapshot(s: unknown, force = false) {
   // Ältere Stände (etwa aus dem CDN) überschreiben nie eine frischere Antwort, etwa direkt nach der eigenen Stimme.
   if (!force && s.v < state.v && Date.now() - lastApplyAt < STALE_GUARD_MS) return;
   lastApplyAt = Date.now();
-  set({ counts: s.counts, total: s.total, v: s.v, ready: true, live: true });
+  set({ counts: s.counts, total: s.total, v: s.v, views: s.views ?? state.views, ready: true, live: true });
+}
+
+const viewed = new Set<string>();
+
+/**
+ * Klickzähler: Jemand hat eine Stadt geöffnet (Karte, Liste oder Einladungslink). Pro Seitenaufruf zählt jede Stadt
+ * einmal, der Server zählt zusätzlich höchstens einmal pro Anschluss und Stunde. Fehler sind egal.
+ */
+function trackView(city: string) {
+  if (viewed.has(city)) return;
+  viewed.add(city);
+  try {
+    void fetch("/api/view", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ city }),
+      keepalive: true,
+      cache: "no-store",
+    }).catch(() => {});
+  } catch {}
 }
 
 async function fetchCounts() {
@@ -172,6 +195,8 @@ export const voteStore = {
     fetchMe();
     fetchCounts();
     schedule();
+    // Wer über einen Einladungslink kommt, hat die Stadt damit schon geöffnet.
+    if (state.invite) trackView(state.invite);
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("online", onVisible);
     try {
@@ -264,6 +289,7 @@ export const voteStore = {
       return { ok: false, reason: "network" };
     }
   },
+  trackView,
   openSheet: () => set({ sheet: true }),
   closeSheet: () => set({ sheet: false }),
   setFocus: (focus: string | null) => set({ focus }),

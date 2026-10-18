@@ -130,8 +130,8 @@ cpSync(PHP, ROOT, { recursive: true });
 writeFileSync(
   join(ROOT, "_app", "data.php"),
   `<?php
-// Automatisch erzeugt von scripts/hostinger-paket.mjs aus src/lib/cities.ts. Nicht von Hand ändern.
-return ${phpArray({ cities: daten.cities, delete_at: daten.deleteAt, placeholder: PLACEHOLDER })};
+// Automatisch erzeugt von scripts/hostinger-paket.mjs aus src/lib/cities.ts und src/lib/contact.ts. Nicht von Hand ändern.
+return ${phpArray({ cities: daten.cities, delete_at: daten.deleteAt, placeholder: PLACEHOLDER, contact: daten.contact })};
 `,
 );
 
@@ -148,7 +148,8 @@ function phpArray(value, indent = "") {
 }
 
 // 7. Prüfen und packen.
-for (const need of [".htaccess", "api.php", "seite.php", "404.html", "_app/.htaccess", "_app/data.php", "_app/config.php"]) {
+if (!daten.contact?.email || !daten.contact?.topics) fail("paket-daten.json ohne Angaben zum Kontaktformular.");
+for (const need of [".htaccess", "api.php", "seite.php", "404.html", "_app/.htaccess", "_app/data.php", "_app/config.php", "_app/mail.php"]) {
   if (!existsSync(join(ROOT, need))) fail(`${need} fehlt im Paket.`);
 }
 try {

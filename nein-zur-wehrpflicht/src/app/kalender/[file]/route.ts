@@ -1,4 +1,4 @@
-import { CITIES } from "@/lib/cities";
+import { CITIES, mapsUrl } from "@/lib/cities";
 import { pagePath, siteUrl } from "@/lib/site";
 
 export const dynamic = "force-static";
@@ -47,9 +47,10 @@ export async function GET(_req: Request, ctx: { params: Promise<{ file: string }
     "DTSTAMP:20261018T000000Z",
     "DTSTART:20261031T130000Z",
     "DTEND:20261031T160000Z",
-    `SUMMARY:${esc(`Protest gegen die Wehrpflicht: ${c.name}`)}`,
+    `SUMMARY:${esc(`Gen Z steht auf: Protest in ${c.name}`)}`,
     `LOCATION:${esc(`${c.place}, ${c.name}`)}`,
-    `DESCRIPTION:${esc(`Treffpunkt ${c.place}, ab 14 Uhr. Bleib friedlich und komm mit Freund*innen. ${siteUrl()}`)}`,
+    `GEO:${c.lat};${c.lng}`,
+    `DESCRIPTION:${esc(`Treffpunkt ${c.place}, ab 14 Uhr. Route: ${mapsUrl(c)}\nBleib friedlich und komm mit Freund*innen. ${siteUrl()}`)}`,
     `URL:${siteUrl()}${pagePath(`/dabei/${c.id}`)}`,
     "BEGIN:VALARM",
     "TRIGGER:-PT2H",

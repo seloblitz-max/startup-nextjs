@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { CITIES, CITY_BY_ID } from "@/lib/cities";
 import { siteHost } from "@/lib/site";
-import { imageResponse, ogFonts, ogPhoto } from "@/og/assets";
+import { imageResponse, ogFonts, ogLogo } from "@/og/assets";
 import { OgCity, OgHome } from "@/og/cards";
 
 export const dynamic = "force-static";
@@ -18,7 +18,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ file: s
   const id = (await params).file.replace(/\.jpg$/, "");
   const city = id === "start" ? null : CITY_BY_ID[id];
   if (id !== "start" && !city) return new Response("Nicht gefunden", { status: 404 });
-  const [photo, fonts] = await Promise.all([ogPhoto("og-tor.jpg"), ogFonts()]);
-  const card = city ? <OgCity photo={photo} city={city} host={siteHost()} /> : <OgHome photo={photo} host={siteHost()} />;
+  const [logo, fonts] = await Promise.all([ogLogo(), ogFonts()]);
+  const card = city ? <OgCity logo={logo} city={city} host={siteHost()} /> : <OgHome logo={logo} host={siteHost()} />;
   return imageResponse(new ImageResponse(card, { ...OG_SIZE, fonts }), { "Cache-Control": "public, max-age=86400" });
 }

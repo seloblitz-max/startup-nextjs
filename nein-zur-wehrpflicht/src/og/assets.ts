@@ -1,52 +1,50 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 
-// Wird nur auf dem Server gelesen (Teilen-Bilder). next.config nimmt den Ordner in die Server-Dateien auf.
-const DIR = join(process.cwd(), "src", "og");
+// Wird nur auf dem Server gelesen (Teilen-Bilder). next.config nimmt die Ordner in die Server-Dateien auf.
+const SRC = join(process.cwd(), "src");
 
-type Weight = 400 | 500 | 700 | 900;
+type Weight = 400 | 700 | 800 | 900;
 export type OgFont = { name: string; data: ArrayBuffer; weight: Weight; style: "normal" };
 
+// Schriften aus dem Designguide: Lexend für alles, BBH Bartle nur für die Signatur #GENZREGELT.
 const FONT_FILES: Array<[string, string, Weight]> = [
-  ["Big Shoulders", "big-shoulders-latin-700-normal.woff", 700],
-  ["Big Shoulders", "big-shoulders-latin-900-normal.woff", 900],
-  ["Bricolage", "bricolage-grotesque-latin-500-normal.woff", 500],
-  ["Bricolage", "bricolage-grotesque-latin-700-normal.woff", 700],
-  ["Martian Mono", "martian-mono-latin-500-normal.woff", 500],
-  ["Marker", "permanent-marker-latin-400-normal.woff", 400],
+  ["Lexend", "lexend-latin-400-normal.woff", 400],
+  ["Lexend", "lexend-latin-700-normal.woff", 700],
+  ["Lexend", "lexend-latin-800-normal.woff", 800],
+  ["Lexend", "lexend-latin-900-normal.woff", 900],
+  ["BBH Bartle", "bbh-bartle-latin-400-normal.woff", 400],
 ];
 
-async function bytes(file: string) {
-  return new Uint8Array(await readFile(join(DIR, file))).buffer;
+async function bytes(...path: string[]) {
+  return new Uint8Array(await readFile(join(SRC, ...path))).buffer;
 }
 
-let fonts: Promise<OgFont[]> | null = null;
-
-export function ogFonts() {
-  fonts ??= Promise.all(
-    FONT_FILES.map(async ([name, file, weight]) => ({ name, data: await bytes(join("fonts", file)), weight, style: "normal" as const })),
-  ).catch((err) => {
-    fonts = null;
-    throw err;
-  });
-  return fonts;
+/** Hält ein einmal gelesenes Ergebnis fest. Schlägt das Lesen fehl, versucht es der nächste Aufruf neu. */
+function once<T>(load: () => Promise<T>) {
+  let p: Promise<T> | null = null;
+  return () => {
+    p ??= load().catch((err) => {
+      p = null;
+      throw err;
+    });
+    return p;
+  };
 }
 
-const photos = new Map<string, Promise<string>>();
+export const ogFonts = once(() =>
+  Promise.all(
+    FONT_FILES.map(async ([name, file, weight]): Promise<OgFont> => ({
+      name,
+      data: await bytes("og", "fonts", file),
+      weight,
+      style: "normal",
+    })),
+  ),
+);
 
-export function ogPhoto(file: "og-tor.jpg" | "story-tor.jpg") {
-  let p = photos.get(file);
-  if (!p) {
-    p = readFile(join(DIR, file))
-      .then((b) => `data:image/jpeg;base64,${b.toString("base64")}`)
-      .catch((err) => {
-        photos.delete(file);
-        throw err;
-      });
-    photos.set(file, p);
-  }
-  return p;
-}
+/** Das Original-Logo (src/img/logo.svg) als Daten-Adresse für die Bilder. */
+export const ogLogo = once(async () => `data:image/svg+xml;base64,${Buffer.from(await bytes("img", "logo.svg")).toString("base64")}`);
 
 /** Macht aus dem PNG von next/og ein JPEG. Das ist viel kleiner, WhatsApp zeigt große Vorschaubilder sonst nicht an. */
 export async function toJpeg(png: ArrayBuffer, quality = 86) {
@@ -59,8 +57,8 @@ export async function toJpeg(png: ArrayBuffer, quality = 86) {
 }
 
 /** Teilen-Bild als JPEG ausliefern, ohne sharp als PNG. */
-export async function imageResponse(image: Response, headers: Record<string, string> = {}) {
+export async function imageResponse(image: Response, headers: Record<string, string> = {}, quality = 86) {
   const png = await image.arrayBuffer();
-  const jpg = await toJpeg(png);
+  const jpg = await toJpeg(png, quality);
   return new Response(jpg ?? png, { headers: { ...headers, "Content-Type": jpg ? "image/jpeg" : "image/png" } });
 }

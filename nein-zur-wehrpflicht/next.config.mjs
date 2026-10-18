@@ -29,10 +29,10 @@ const nextConfig = {
       }
     : {
         images: { qualities: [75, 82, 90] },
-        // Schriften und Fotos für die Teilen-Bilder, falls eine Route doch zur Laufzeit rendert.
+        // Schriften und Logo für die Teilen-Bilder, falls eine Route doch zur Laufzeit rendert.
         outputFileTracingIncludes: {
-          "/og/[file]": ["./src/og/**/*"],
-          "/story/[file]": ["./src/og/**/*"],
+          "/og/[file]": ["./src/og/fonts/**/*", "./src/img/logo.svg"],
+          "/story/[file]": ["./src/og/fonts/**/*", "./src/img/logo.svg"],
         },
         async headers() {
           return [{ source: "/:path*", headers: securityHeaders }];

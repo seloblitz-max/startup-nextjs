@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import FlapText from "@/components/bits/FlapText";
 import { EVENT_END, EVENT_START } from "@/lib/cities";
 
 const pad = (n: number) => String(n).padStart(2, "0");
@@ -25,14 +24,12 @@ export default function Countdown() {
   }, []);
 
   if (now !== null && now >= EVENT_END) {
-    return <p className="font-display text-4xl font-extrabold uppercase leading-tight">Danke an alle, die auf der Straße waren.</p>;
+    return <p className="t-h4">Danke an alle, die auf der Straße waren. Der 31.10. war erst der Anfang.</p>;
   }
   if (now !== null && now >= EVENT_START) {
     return (
-      <p className="font-display text-5xl font-black uppercase leading-[0.95] text-signal">
-        Es läuft.
-        <br />
-        <span className="text-paper">Komm vorbei.</span>
+      <p className="t-h3">
+        Es läuft. <span className="text-orange">Komm vorbei.</span>
       </p>
     );
   }
@@ -47,19 +44,15 @@ export default function Countdown() {
 
   return (
     <div>
+      <p className="t-label mb-3 text-soft">Noch bis zum Start</p>
       <p className="sr-only" aria-live="off">
         {p ? `Noch ${p.d} Tage, ${p.h} Stunden und ${p.m} Minuten bis zum Protest.` : "Countdown bis zum Protest"}
       </p>
-      <div className="flex items-start gap-3 sm:gap-4" aria-hidden="true">
-        {groups.map(([value, label], i) => (
-          <div key={label} className="flex items-start gap-3 sm:gap-4">
-            <div className="flex flex-col items-center gap-2">
-              <FlapText text={value} className="text-[2.6rem] sm:text-[3.4rem] lg:text-[3.8rem]" />
-              <span className="font-mono text-[0.65rem] uppercase tracking-[0.18em] text-mute">{label}</span>
-            </div>
-            {i < groups.length - 1 ? (
-              <span className="pt-[0.35em] font-display text-[1.8rem] font-black leading-none text-line-2 sm:text-[2.4rem]">:</span>
-            ) : null}
+      <div className="flex gap-2 sm:gap-3" aria-hidden="true">
+        {groups.map(([value, label]) => (
+          <div key={label} className="flex flex-col items-center gap-2">
+            <span className="count-tile">{value}</span>
+            <span className="t-label text-soft">{label}</span>
           </div>
         ))}
       </div>

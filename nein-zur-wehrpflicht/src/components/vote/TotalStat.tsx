@@ -1,6 +1,7 @@
 "use client";
 
 import RollingNumber from "@/components/bits/RollingNumber";
+import { CITY_COUNT } from "@/lib/cities";
 import { useVote } from "./VoteProvider";
 
 /** Gesamtzahl der Zusagen mit Live-Status. */
@@ -14,7 +15,7 @@ export default function TotalStat() {
   const status = !setup
     ? "Startet in Kürze"
     : live
-      ? `Live aus ${cities} von 21 Städten`
+      ? `Live aus ${cities} von ${CITY_COUNT} Städten`
       : ready
         ? "Verbindung wird gesucht"
         : "Zahlen werden geladen";
@@ -22,16 +23,16 @@ export default function TotalStat() {
   return (
     <div className="flex flex-wrap items-end gap-x-6 gap-y-3">
       <p className="flex items-end gap-3">
-        <span className="font-display text-[4.25rem] font-black leading-[0.8] text-paper sm:text-[5.5rem]">
+        <span className="text-[3.5rem] font-black leading-[0.85] sm:text-[4rem]">
           {ready ? <RollingNumber value={total} /> : <span className="text-mute">–</span>}
         </span>
-        <span className="pb-1 text-sm font-semibold leading-tight text-paper-2">
+        <span className="pb-0.5 leading-tight">
           {total === 1 ? "Zusage" : "Zusagen"}
           <br />
           bundesweit
         </span>
       </p>
-      <p className="flex items-center gap-2 pb-1.5 font-mono text-[0.68rem] uppercase tracking-[0.16em] text-paper-2">
+      <p className="t-label flex items-center gap-2 pb-1 text-soft">
         <span className={live && setup ? "live-dot" : "live-dot live-dot-off"} aria-hidden="true" />
         {status}
       </p>

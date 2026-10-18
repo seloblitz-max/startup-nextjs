@@ -7,12 +7,15 @@ declare(strict_types=1);
  *   GET    /api/me      Zusage dieses Geräts
  *   POST   /api/vote    {"city": "berlin"} zusagen oder wechseln, {"withdraw": true} zurückziehen
  *   DELETE /api/vote    zurückziehen
+ *   POST   /api/view    {"city": "berlin"} Klickzähler für die Reihenfolge der Liste
+ *   POST   /api/contact Kontaktformular, geht per E-Mail weiter (siehe _app/mail.php)
  *   GET    /api/status  Prüfseite für die Einrichtung
  */
 
 require __DIR__ . '/_app/bootstrap.php';
 require __DIR__ . '/_app/device.php';
 require __DIR__ . '/_app/store.php';
+require __DIR__ . '/_app/mail.php';
 
 function gzsa_deny(string $error, int $status): void
 {
@@ -187,10 +190,117 @@ function gzsa_withdraw(): void
     gzsa_personal(['mine' => null, 'removed' => $result['removed'], 'snapshot' => $result['snapshot']], $device['token']);
 }
 
+/** JSON-Objekt aus der Anfrage, höchstens $max Bytes, wie readJson() in src/lib/api.ts. */
+function gzsa_read_json(int $max)
+{
+    $type = (string) ($_SERVER['CONTENT_TYPE'] ?? $_SERVER['HTTP_CONTENT_TYPE'] ?? '');
+    if (stripos($type, 'application/json') === false) {
+        return null;
+    }
+    $text = (string) file_get_contents('php://input', false, null, 0, $max + 1);
+    if (strlen($text) > $max) {
+        return 'too_large';
+    }
+    // Nur ein Objekt zählt, keine Liste und kein einzelner Wert.
+    return is_object(json_decode($text)) ? (array) json_decode($text, true) : null;
+}
+
+/**
+ * Klickzähler pro Stadt, wenn jemand eine Stadt auf der Karte, in der Liste oder über einen Einladungslink öffnet.
+ * Pro Netz zählt jede Stadt höchstens einmal pro Stunde. Dafür wird nur der Hash des Netzes kurz gespeichert.
+ */
+function gzsa_view(): void
+{
+    if (gzsa_foreign()) {
+        gzsa_deny('forbidden', 403);
+        return;
+    }
+    $body = gzsa_read_json(100);
+    if ($body === 'too_large') {
+        gzsa_deny('bad_request', 413);
+        return;
+    }
+    if ($body === null) {
+        gzsa_deny('bad_request', 400);
+        return;
+    }
+    $city = $body['city'] ?? null;
+    if (!gzsa_is_city($city)) {
+        gzsa_deny('unknown_city', 400);
+        return;
+    }
+    try {
+        $store = GzsaStore::open();
+        $counted = $store->view(gzsa_network_hash($store->secret()), $city);
+    } catch (Throwable $e) {
+        if (!$e instanceof GzsaSetupError) {
+            error_log('gzsa view: ' . $e->getMessage());
+        }
+        gzsa_deny('unavailable', 503);
+        return;
+    }
+    gzsa_json(['counted' => $counted]);
+}
+
+/**
+ * Kontaktformular: {"topic", "name", "email", "message", "consent": true}. Die Nachricht geht per E-Mail weiter und
+ * wird nicht gespeichert. Gegen Spam: Honigtopf-Feld, Mindestzeit zum Ausfüllen, höchstens fünf Nachrichten pro Netz
+ * und Stunde.
+ */
+function gzsa_contact_form(): void
+{
+    if (gzsa_foreign()) {
+        gzsa_deny('forbidden', 403);
+        return;
+    }
+    $body = gzsa_read_json(20000);
+    if ($body === 'too_large') {
+        gzsa_deny('too_large', 413);
+        return;
+    }
+    if ($body === null) {
+        gzsa_deny('bad_request', 400);
+        return;
+    }
+    $checked = gzsa_contact_check($body);
+    if (!$checked['ok']) {
+        gzsa_json(['error' => 'invalid', 'field' => $checked['field']], 400);
+        return;
+    }
+    if (gzsa_looks_automated($body)) {
+        gzsa_json(['ok' => true]);
+        return;
+    }
+    if (!gzsa_mail_available()) {
+        gzsa_deny('setup', 503);
+        return;
+    }
+    try {
+        $store = GzsaStore::open();
+        if ($store->contactHit(gzsa_network_hash($store->secret())) > (int) gzsa_contact()['per_hour']) {
+            gzsa_deny('rate', 429);
+            return;
+        }
+    } catch (Throwable $e) {
+        // Ohne Datenbank geht die Nachricht trotzdem raus, nur ohne Grenze.
+        if (!$e instanceof GzsaSetupError) {
+            error_log('gzsa contact limit: ' . $e->getMessage());
+        }
+    }
+    try {
+        gzsa_send_contact($checked['value'], (string) parse_url(gzsa_origin(), PHP_URL_HOST));
+    } catch (Throwable $e) {
+        error_log('gzsa contact mail: ' . $e->getMessage());
+        gzsa_deny('mail', 502);
+        return;
+    }
+    gzsa_json(['ok' => true]);
+}
+
 /** Prüfseite nach dem Hochladen: Läuft die Datenbank, fehlt etwas? Zeigt nur Zustände, keine Daten. */
 function gzsa_status(): void
 {
-    $out = ['ok' => false, 'speicher' => null, 'zusagen' => null, 'hinweis' => ''];
+    $out = ['ok' => false, 'speicher' => null, 'zusagen' => null, 'kontaktformular' => null, 'hinweis' => ''];
     $tips = [];
     try {
         $store = GzsaStore::open();
@@ -217,6 +327,14 @@ function gzsa_status(): void
     if ($proxy !== '') {
         $tips[] = $proxy;
     }
+    if (gzsa_smtp_configured()) {
+        $out['kontaktformular'] = 'SMTP (' . trim((string) gzsa_config()['smtp']['host']) . ')';
+    } elseif (gzsa_mail_available()) {
+        $out['kontaktformular'] = 'PHP mail()';
+    } else {
+        $tips[] = 'Das Kontaktformular kann keine E-Mails senden, weil PHP mail() abgeschaltet ist. Bitte in _app/config.php '
+            . 'unter smtp ein E-Mail-Postfach eintragen. Bis dahin verweist das Formular auf die E-Mail-Adresse.';
+    }
     if (PHP_VERSION_ID < 80100) {
         $tips[] = 'Hier läuft PHP ' . PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION . '. Empfohlen ist 8.1 oder neuer (hPanel → Erweitert → PHP-Konfiguration).';
     }
@@ -234,6 +352,8 @@ $routes = [
     'counts' => ['GET', 'HEAD'],
     'me' => ['GET', 'HEAD'],
     'vote' => ['POST', 'DELETE'],
+    'view' => ['POST'],
+    'contact' => ['POST'],
     'status' => ['GET', 'HEAD'],
 ];
 $method = (string) ($_SERVER['REQUEST_METHOD'] ?? 'GET');
@@ -255,6 +375,12 @@ switch ($m[1]) {
         break;
     case 'vote':
         gzsa_vote();
+        break;
+    case 'view':
+        gzsa_view();
+        break;
+    case 'contact':
+        gzsa_contact_form();
         break;
     default:
         gzsa_status();

@@ -1,21 +1,29 @@
 import Link from "next/link";
-import SquirrelMark from "@/components/SquirrelMark";
+import Logo from "@/components/brand/Logo";
+import Wordmark from "@/components/brand/Wordmark";
+import { CONTACT_EMAIL } from "@/lib/contact";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-line">
-      <div className="mx-auto max-w-[1320px] px-4 pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-12 sm:px-6 lg:px-10">
+    <footer className="border-t border-mark-2">
+      <div className="container-page pb-[max(2.5rem,env(safe-area-inset-bottom))] pt-12">
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="flex items-center gap-2">
-              <SquirrelMark className="size-8 text-signal" />
-              <span className="font-display text-[1.5rem] font-extrabold uppercase leading-none tracking-[0.04em]">Gen Z steht auf</span>
+            <p className="flex items-center gap-3">
+              <Logo size={44} alt="Logo von Gen Z regelt: ein orangefarbenes Eichhörnchen" />
+              <Wordmark className="text-[1.25rem]" />
             </p>
-            <p className="mt-3 max-w-[28rem] text-sm leading-relaxed text-mute">
-              Für unsere Zukunft. Gemeinsam für Deutschland. Deine Zusage ist anonym, ohne Konto und ohne Tracking.
+            <p className="mt-4">
+              Für <span className="text-orange">unsere</span> Zukunft. Für <span className="text-orange">Demokratie.</span>
+            </p>
+            <p className="mt-2 text-soft">
+              Kontakt:{" "}
+              <a href={`mailto:${CONTACT_EMAIL}`} className="link-quiet">
+                {CONTACT_EMAIL}
+              </a>
             </p>
           </div>
-          <nav aria-label="Rechtliches" className="flex gap-6 text-sm font-semibold">
+          <nav aria-label="Rechtliches" className="flex gap-6">
             <Link href="/impressum" className="nav-link px-0">
               Impressum
             </Link>
@@ -24,13 +32,12 @@ export default function Footer() {
             </Link>
           </nav>
         </div>
-        <p className="mt-10 text-xs text-mute">Fotos auf dieser Seite sind Symbolbilder.</p>
-        <p className="mt-6 border-t border-line pt-6 text-sm text-paper-2">
+        <p className="mt-10 border-t border-mark-2 pt-6 text-soft">
           <a
             href="https://selodigital.com.de"
             target="_blank"
             rel="noopener noreferrer"
-            className="font-semibold text-paper underline decoration-signal decoration-2 underline-offset-4 transition-colors hover:text-signal-hi"
+            className="font-bold text-white underline decoration-orange decoration-2 underline-offset-4 transition-colors hover:text-orange"
           >
             selodigital
           </a>{" "}

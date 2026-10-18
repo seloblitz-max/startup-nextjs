@@ -24,6 +24,9 @@ function gzsa_config(): array
             'max_new_devices_per_day' => 150,
             'max_votes_per_minute' => 40,
             'ip_header' => '',
+            'contact_to' => '',
+            'contact_from' => '',
+            'smtp' => ['host' => '', 'port' => 465, 'user' => '', 'password' => ''],
         ];
         $file = __DIR__ . '/config.php';
         $user = is_file($file) ? (include $file) : [];

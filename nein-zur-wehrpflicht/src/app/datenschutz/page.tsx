@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import LegalPage from "@/components/LegalPage";
+import { CONTACT_EMAIL, CONTACT_PER_HOUR } from "@/lib/contact";
 
 export const metadata: Metadata = { title: "Datenschutzerklärung", alternates: { canonical: "/datenschutz" } };
 
@@ -13,7 +14,8 @@ export default function Datenschutz() {
     <LegalPage title={"Datenschutz­erklärung"}>
       <p>
         Kurz gesagt: Diese Website kommt ohne Konto, ohne Tracking, ohne Analyse-Tools und ohne Werbung aus. Gespeichert wird
-        nur, was für Ihre Zusage „Ich bin dabei“ nötig ist.
+        nur, was für Ihre Zusage „Ich bin dabei“ nötig ist. Nachrichten aus dem Kontaktformular gehen per E-Mail an uns und
+        werden auf dem Server nicht gespeichert.
       </p>
 
       <h2>Verantwortlicher</h2>
@@ -118,16 +120,46 @@ export default function Datenschutz() {
         </p>
       )}
 
-      <h2>4. Schutz vor Missbrauch</h2>
+      <h2>4. Aufrufe pro Stadt</h2>
+      <p>
+        Damit die Städte, die viele interessieren, in der Liste weiter oben stehen, zählen wir, wie oft eine Stadt geöffnet
+        wird (Tippen auf der Karte oder in der Liste, Aufruf eines Einladungslinks). Dazu schickt Ihr Browser nur den Namen
+        der Stadt an den Server. Damit ein Anschluss eine Stadt nicht beliebig oft hochzählen kann, merken wir uns für eine
+        Stunde, dass aus Ihrem Netz diese Stadt schon gezählt wurde. Dafür verwenden wir denselben Hash wie unter „Schutz vor
+        Missbrauch“, nicht die IP-Adresse. Gespeichert wird am Ende nur eine Zahl pro Stadt, ohne Bezug zu Personen.
+        Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse liegt in einer übersichtlichen Liste.
+      </p>
+
+      <h2 id="kontaktformular">5. Kontaktformular und E-Mail</h2>
+      <p>
+        Wenn Sie uns über das Kontaktformular schreiben, verarbeiten wir Ihren Namen, Ihre E-Mail-Adresse und Ihre Nachricht,
+        um Ihnen zu antworten. Die Angaben werden{" "}
+        {HOSTINGER ? "über den E-Mail-Server von Hostinger (siehe Hosting)" : "über den E-Mail-Server unseres Postfachs"} als
+        E-Mail an unser Postfach <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> geschickt. Auf dem Server dieser
+        Website wird die Nachricht nicht gespeichert. Dasselbe gilt, wenn Sie uns direkt eine E-Mail schreiben.
+      </p>
+      <p>
+        Rechtsgrundlage ist Ihre Einwilligung, die Sie mit dem Häkchen im Formular erteilen (Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a
+        DSGVO). Sie können sie jederzeit per E-Mail an uns widerrufen. Bitte schicken Sie uns über das Formular keine
+        besonders sensiblen Angaben, etwa zu Ihrer Gesundheit.
+      </p>
+      <p>
+        Gegen Spam enthält das Formular ein für Menschen unsichtbares Feld und prüft, ob es nicht zu schnell abgeschickt wurde.
+        Außerdem sind höchstens {CONTACT_PER_HOUR} Nachrichten pro Stunde aus einem Netz möglich. Dafür zählen wir die Nachrichten
+        unter dem Hash aus „Schutz vor Missbrauch“, nicht unter der IP-Adresse.
+      </p>
+
+      <h2>6. Schutz vor Missbrauch</h2>
       <p>
         Damit niemand die Zahlen mit Skripten verfälscht, begrenzen wir, wie oft aus einem Netz abgestimmt werden kann. Dazu
         bilden wir aus Ihrer IP-Adresse (bei IPv6 aus den ersten 64 Bit) mit einem geheimen Schlüssel einen Hash, aus dem
-        sich die Adresse nicht ablesen lässt. Damit zählen wir die Stimmen pro Minute und die neuen Geräte pro Tag. Die
-        IP-Adresse selbst speichern wir nicht. Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse
-        liegt in einer fälschungssicheren Zählung.
+        sich die Adresse nicht ablesen lässt. Damit zählen wir die Stimmen pro Minute, die neuen Geräte pro Tag, die Aufrufe
+        pro Stadt und Stunde und die Nachrichten aus dem Kontaktformular pro Stunde. Die IP-Adresse selbst speichern wir nicht.
+        Rechtsgrundlage ist Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO. Unser berechtigtes Interesse liegt in einer fälschungssicheren
+        Zählung und im Schutz vor Spam.
       </p>
 
-      <h2>5. Cookies und ähnliche Technologien</h2>
+      <h2>7. Cookies und ähnliche Technologien</h2>
       <p>
         Diese Website verwendet nur technisch notwendige Technologien, und das erst, wenn Sie „Ich bin dabei“ tippen:
       </p>
@@ -145,20 +177,22 @@ export default function Datenschutz() {
         (§&nbsp;25 Abs.&nbsp;2 Nr.&nbsp;2 TDDDG). Cookies für Analyse, Tracking oder Werbung verwenden wir nicht.
       </p>
 
-      <h2>6. Externe Links</h2>
+      <h2>8. Externe Links und Dokumente</h2>
       <p>
-        Die Links zu Google Maps und WhatsApp öffnen fremde Dienste erst, wenn Sie sie antippen. Erst dann werden Daten an
-        diese Anbieter übertragen, und es gelten deren Datenschutzbestimmungen.
+        Die Links zu Google Maps, WhatsApp, Telegram und sozialen Netzwerken öffnen fremde Dienste erst, wenn Sie sie
+        antippen. Erst dann werden Daten an diese Anbieter übertragen, und es gelten deren Datenschutzbestimmungen. Die
+        PDF-Dokumente zum Herunterladen liegen auf dieser Website selbst.
       </p>
 
-      <h2>7. Rechtsgrundlagen</h2>
+      <h2>9. Rechtsgrundlagen</h2>
       <p>
         Die Verarbeitung personenbezogener Daten erfolgt auf Grundlage von Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a und Art.&nbsp;9 Abs.&nbsp;2 lit.&nbsp;a DSGVO
-        (Ihre Zusage), Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (Hosting, Server-Logfiles und Schutz vor Missbrauch) sowie
-        §&nbsp;25 Abs.&nbsp;2 Nr.&nbsp;2 TDDDG (Geräte-Kennung in Ihrem Browser).
+        (Ihre Zusage), Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;a DSGVO (Kontaktformular), Art.&nbsp;6 Abs.&nbsp;1 lit.&nbsp;f DSGVO (Hosting,
+        Server-Logfiles, Aufrufe pro Stadt und Schutz vor Missbrauch) sowie §&nbsp;25 Abs.&nbsp;2 Nr.&nbsp;2 TDDDG (Geräte-Kennung in
+        Ihrem Browser).
       </p>
 
-      <h2>8. Speicherdauer</h2>
+      <h2>10. Speicherdauer</h2>
       <p>
         Personenbezogene Daten werden nur so lange gespeichert, wie dies für den jeweiligen Zweck erforderlich ist.
       </p>
@@ -172,12 +206,17 @@ export default function Datenschutz() {
           gelöscht. Sie können beides jederzeit selbst entfernen, indem Sie die Website-Daten in Ihrem Browser löschen.
         </li>
         <li>
-          Die Zähler zum Schutz vor Missbrauch löschen sich nach zwei Minuten (Stimmen pro Minute) und nach 25 Stunden (neue
-          Geräte pro Tag).
+          Die Zähler zum Schutz vor Missbrauch löschen sich nach zwei Minuten (Stimmen pro Minute), nach einer Stunde
+          (Aufrufe pro Stadt, Nachrichten aus dem Kontaktformular) und nach 25 Stunden (neue Geräte pro Tag). Die Zahl der
+          Aufrufe pro Stadt löschen wir zusammen mit den Zusagen am 14.&nbsp;November 2026.
+        </li>
+        <li>
+          E-Mails und Nachrichten aus dem Kontaktformular löschen wir, sobald Ihr Anliegen erledigt ist und keine gesetzlichen
+          Aufbewahrungspflichten entgegenstehen.
         </li>
       </ul>
 
-      <h2>9. Ihre Rechte</h2>
+      <h2>11. Ihre Rechte</h2>
       <p>Sie haben insbesondere das Recht auf:</p>
       <ul className="is-tight">
         <li>Auskunft</li>

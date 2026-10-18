@@ -1,5 +1,7 @@
-// Erzeugt src/lib/germany-map.ts aus Natural-Earth-Daten (world-atlas, 1:10 Mio.).
+// Erzeugt src/lib/germany-map.ts aus Natural-Earth-Daten (world-atlas, 1:10 Mio.): Umriss und Projektion.
 // Projektion: Lambert, winkeltreu, Standardbreiten 48° und 53° (übliche Deutschlandkarte).
+// Die Städte rechnet src/lib/map-layout.ts mit denselben Werten aus ihren Koordinaten (src/lib/cities.ts) aus,
+// deshalb braucht eine neue Stadt kein neues Bauen der Karte.
 // Aufruf: node scripts/build-map.mjs
 import { readFileSync, writeFileSync } from "node:fs";
 import { feature } from "topojson-client";
@@ -7,30 +9,6 @@ import { feature } from "topojson-client";
 const topo = JSON.parse(readFileSync(new URL("../node_modules/world-atlas/countries-10m.json", import.meta.url)));
 const de = feature(topo, topo.objects.countries.geometries.find((g) => g.id === "276"));
 
-// Grobe Koordinaten der Treffpunkte (Stadtmitte reicht für die Karte).
-const CITY_COORDS = {
-  berlin: [52.5163, 13.3777],
-  hamburg: [53.5503, 9.992],
-  koeln: [50.936, 6.96],
-  hannover: [52.374, 9.74],
-  dortmund: [51.511, 7.464],
-  essen: [51.454, 7.013],
-  bielefeld: [52.021, 8.533],
-  stuttgart: [48.7784, 9.18],
-  bremen: [53.0758, 8.8072],
-  muenchen: [48.1374, 11.5755],
-  nuernberg: [49.454, 11.0775],
-  dresden: [51.054, 13.736],
-  leipzig: [51.3397, 12.381],
-  frankfurt: [50.1106, 8.6821],
-  duesseldorf: [51.2277, 6.7735],
-  bonn: [50.7374, 7.1],
-  freiburg: [47.996, 7.849],
-  mainz: [49.999, 8.271],
-  magdeburg: [52.13, 11.629],
-  erfurt: [50.977, 11.023],
-  karlsruhe: [49.009, 8.404],
-};
 
 const rad = (d) => (d * Math.PI) / 180;
 const p1 = rad(48), p2 = rad(53), p0 = rad(51), l0 = rad(10.4);
@@ -96,19 +74,14 @@ rings = rings.map((r) => simplify(r.map(fit), 0.7)).filter((r) => {
 
 const f1 = (v) => Math.round(v * 10) / 10;
 const path = rings.map((r) => "M" + r.map(([x, y]) => `${f1(x)} ${f1(y)}`).join("L") + "Z").join("");
-const cities = Object.fromEntries(
-  Object.entries(CITY_COORDS).map(([id, [lat, lon]]) => {
-    const [x, y] = fit(project([lon, lat]));
-    return [id, [f1(x), f1(y)]];
-  }),
-);
 
 const out = `// Automatisch erzeugt von scripts/build-map.mjs. Nicht von Hand bearbeiten.
 // Kartengrundlage: Natural Earth (gemeinfrei) über world-atlas.
 export const MAP_W = ${W};
 export const MAP_H = ${H};
 export const GERMANY_PATH = ${JSON.stringify(path)};
-export const CITY_XY: Record<string, [number, number]> = ${JSON.stringify(cities)};
+/** Lambert-Projektion (Standardbreiten 48° und 53°, Mitte 51° N, 10,4° O) und Einpassen in die Karte. */
+export const PROJECTION = ${JSON.stringify({ n, F, r0, lon0: l0, minX, minY, scale: s, pad: PAD })};
 `;
 writeFileSync(new URL("../src/lib/germany-map.ts", import.meta.url), out);
 console.log("rings", rings.length, "points", rings.reduce((a, r) => a + r.length, 0), "bytes", path.length, "H", H);

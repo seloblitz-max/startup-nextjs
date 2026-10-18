@@ -5,6 +5,7 @@ declare(strict_types=1);
  * Speicher für die Abstimmung: SQLite (Standard, ohne Einrichtung) oder MySQL/MariaDB (siehe config.php).
  * Verhält sich wie die Redis-Fassung in src/lib/store.ts: eine Stimme pro Gerät, ein Wechsel verschiebt die Stimme,
  * Grenzwerte pro Netz, Geräte-Einträge löschen sich am Löschtermin, die Zähler pro Stadt bleiben stehen.
+ * Dazu kommen die Aufrufe pro Stadt (Reihenfolge der Liste) und die Grenze für das Kontaktformular.
  * Alle Schreibvorgänge laufen nacheinander unter einer Sperre, so bleiben die Nummern pro Stadt eindeutig.
  */
 
@@ -241,6 +242,42 @@ final class GzsaStore
         return $result;
     }
 
+    /**
+     * Klickzähler: Jemand hat eine Stadt geöffnet. Pro Netz zählt jede Stadt höchstens einmal pro Stunde, wie VIEW_LUA
+     * in src/lib/store.ts. Gibt zurück, ob gezählt wurde.
+     */
+    public function view(string $net, string $city): bool
+    {
+        $counted = $this->guard(function () use ($net, $city) {
+            return $this->write(function () use ($net, $city) {
+                $now = time();
+                // Kurzer Schlüssel (höchstens 64 Zeichen): Netz, Stunde und ein Kürzel der Stadt.
+                $key = 'vs:' . $net . ':' . intdiv($now, 3600) . ':' . substr(hash('sha256', $city), 0, 12);
+                if ($this->hit($key, 3600, $now) > 1) {
+                    return false;
+                }
+                if ($this->run('UPDATE gzsa_views SET n = n + 1 WHERE city = ?', [$city])->rowCount() === 0) {
+                    $this->run('INSERT INTO gzsa_views (city, n) VALUES (?, 1)', [$city]);
+                }
+                return true;
+            });
+        });
+        $this->maybeCleanup();
+        return $counted;
+    }
+
+    /** Nachrichten aus diesem Netz in der laufenden Stunde, diese mitgezählt (Grenze für das Kontaktformular). */
+    public function contactHit(string $net): int
+    {
+        $hits = $this->guard(function () use ($net) {
+            return $this->write(function () use ($net) {
+                return $this->hit('ct:' . $net, 3600, time());
+            });
+        });
+        $this->maybeCleanup();
+        return $hits;
+    }
+
     /** Zusage zurückziehen: Geräte-Eintrag löschen, die Stadt um eins verringern (nie unter null). */
     public function withdraw(string $id, string $net): array
     {
@@ -290,27 +327,33 @@ final class GzsaStore
         return 1;
     }
 
-    /** Zählerstand und Version in einer Abfrage, damit beides zusammenpasst. */
+    /** Zählerstand, Aufrufe und Version in einer Abfrage, damit alles zusammenpasst. */
     private function snap(): array
     {
         $rows = $this->run(
             "SELECT 'c' AS t, city AS k, n FROM gzsa_counts WHERE n > 0"
+            . " UNION ALL SELECT 'w' AS t, city AS k, n FROM gzsa_views WHERE n > 0"
             . " UNION ALL SELECT 'm' AS t, k, n FROM gzsa_meta WHERE k IN ('version', 'cleanup', 'purged')"
         )->fetchAll();
         $counts = [];
+        $views = [];
         $total = 0;
         $meta = ['version' => 0, 'cleanup' => 0, 'purged' => 0];
         foreach ($rows as $row) {
             $n = (int) $row['n'];
             if ($row['t'] === 'm') {
                 $meta[$row['k']] = $n;
-            } elseif (gzsa_is_city($row['k']) && $n > 0) {
+            } elseif (!gzsa_is_city($row['k']) || $n <= 0) {
+                continue;
+            } elseif ($row['t'] === 'w') {
+                $views[$row['k']] = $n;
+            } else {
                 $counts[$row['k']] = $n;
                 $total += $n;
             }
         }
         $this->meta = $meta;
-        return ['counts' => (object) $counts, 'total' => $total, 'v' => $meta['version']];
+        return ['counts' => (object) $counts, 'total' => $total, 'v' => $meta['version'], 'views' => (object) $views];
     }
 
     /**
@@ -415,6 +458,7 @@ final class GzsaStore
             $this->write(function () {
                 $this->pdo->exec("CREATE TABLE IF NOT EXISTS gzsa_meta (k TEXT PRIMARY KEY, n INTEGER NOT NULL DEFAULT 0, t TEXT NOT NULL DEFAULT '')");
                 $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_counts (city TEXT PRIMARY KEY, n INTEGER NOT NULL DEFAULT 0)');
+                $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_views (city TEXT PRIMARY KEY, n INTEGER NOT NULL DEFAULT 0)');
                 $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_devices (id TEXT PRIMARY KEY, city TEXT NOT NULL, rank_nr INTEGER NOT NULL, expires_at INTEGER NOT NULL)');
                 $this->pdo->exec('CREATE INDEX IF NOT EXISTS gzsa_devices_expires ON gzsa_devices (expires_at)');
                 $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_limits (k TEXT PRIMARY KEY, hits INTEGER NOT NULL, expires_at INTEGER NOT NULL)');
@@ -426,6 +470,7 @@ final class GzsaStore
         $table = ' ENGINE=InnoDB DEFAULT CHARSET=ascii COLLATE=ascii_bin';
         $this->pdo->exec("CREATE TABLE IF NOT EXISTS gzsa_meta (k VARCHAR(32) NOT NULL PRIMARY KEY, n BIGINT NOT NULL DEFAULT 0, t VARCHAR(255) NOT NULL DEFAULT '')" . $table);
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_counts (city VARCHAR(32) NOT NULL PRIMARY KEY, n INT NOT NULL DEFAULT 0)' . $table);
+        $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_views (city VARCHAR(32) NOT NULL PRIMARY KEY, n INT NOT NULL DEFAULT 0)' . $table);
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_devices (id CHAR(36) NOT NULL PRIMARY KEY, city VARCHAR(32) NOT NULL, rank_nr INT NOT NULL, expires_at BIGINT NOT NULL, KEY gzsa_devices_expires (expires_at))' . $table);
         $this->pdo->exec('CREATE TABLE IF NOT EXISTS gzsa_limits (k VARCHAR(64) NOT NULL PRIMARY KEY, hits INT NOT NULL, expires_at BIGINT NOT NULL, KEY gzsa_limits_expires (expires_at))' . $table);
         $this->seed('INSERT IGNORE');

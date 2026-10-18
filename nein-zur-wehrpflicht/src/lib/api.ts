@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DATA_DELETE_AT } from "./cities";
-import { DEVICE_COOKIE, DEVICE_HEADER, issueToken, verifyToken } from "./device";
+import { clientIp, DEVICE_COOKIE, DEVICE_HEADER, hashIp, issueToken, networkOf, verifyToken } from "./device";
 
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 120;
 
@@ -53,4 +53,35 @@ export function setupMissing() {
     { error: "setup", message: "Die Abstimmung ist noch nicht mit einer Datenbank verbunden." },
     { status: 503, headers: { "Cache-Control": "no-store" } },
   );
+}
+
+export const deny = (error: string, status: number) =>
+  NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
+
+/** Anfragen nur von dieser Seite aus, nicht von fremden Websites. */
+export function foreign(req: NextRequest) {
+  if (req.headers.get("sec-fetch-site") === "cross-site") return true;
+  const origin = req.headers.get("origin");
+  if (!origin) return false;
+  try {
+    return new URL(origin).host !== req.headers.get("host");
+  } catch {
+    return true;
+  }
+}
+
+/** Gesalzener Hash des Netzes (IPv4-Adresse oder IPv6-/64), nie die Adresse selbst. */
+export const network = (req: NextRequest) => hashIp(networkOf(clientIp(req.headers)));
+
+/** JSON-Body mit Größengrenze lesen. `null` heißt: kein gültiges JSON-Objekt. */
+export async function readJson(req: NextRequest, maxBytes: number): Promise<Record<string, unknown> | "too_large" | null> {
+  if (!req.headers.get("content-type")?.includes("application/json")) return null;
+  const text = await req.text();
+  if (Buffer.byteLength(text) > maxBytes) return "too_large";
+  try {
+    const body = JSON.parse(text);
+    return body && typeof body === "object" && !Array.isArray(body) ? body : null;
+  } catch {
+    return null;
+  }
 }

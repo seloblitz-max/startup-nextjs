@@ -1,27 +1,9 @@
-import { NextResponse, type NextRequest } from "next/server";
+import { type NextRequest } from "next/server";
 import { CITY_IDS } from "@/lib/cities";
-import { clientIp, hashIp, networkOf } from "@/lib/device";
 import { getStore, rememberSnapshot, StoreNotConfiguredError } from "@/lib/store";
-import { knownDevice, personal, resolveDevice, setupMissing } from "@/lib/api";
+import { deny, foreign, knownDevice, network, personal, resolveDevice, setupMissing } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
-
-const deny = (error: string, status: number) =>
-  NextResponse.json({ error }, { status, headers: { "Cache-Control": "no-store" } });
-
-/** Stimmen nur von dieser Seite aus, nicht von fremden Websites. */
-function foreign(req: NextRequest) {
-  if (req.headers.get("sec-fetch-site") === "cross-site") return true;
-  const origin = req.headers.get("origin");
-  if (!origin) return false;
-  try {
-    return new URL(origin).host !== req.headers.get("host");
-  } catch {
-    return true;
-  }
-}
-
-const network = (req: NextRequest) => hashIp(networkOf(clientIp(req.headers)));
 
 function failed(err: unknown, what: string) {
   if (err instanceof StoreNotConfiguredError) return setupMissing();

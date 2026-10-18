@@ -1,13 +1,14 @@
 import Header from "@/components/Header";
 import Toasts from "@/components/Toasts";
-import DateSection from "@/components/sections/DateSection";
+import Contact from "@/components/sections/Contact";
+import DateBand from "@/components/sections/DateBand";
+import Demo from "@/components/sections/Demo";
 import Faq from "@/components/sections/Faq";
 import FinalCta from "@/components/sections/FinalCta";
 import Footer from "@/components/sections/Footer";
 import Hero from "@/components/sections/Hero";
-import Manifesto from "@/components/sections/Manifesto";
-import Marquee from "@/components/sections/Marquee";
-import Tips from "@/components/sections/Tips";
+import Topics from "@/components/sections/Topics";
+import Values from "@/components/sections/Values";
 import Board from "@/components/vote/Board";
 import TicketSheet from "@/components/vote/TicketSheet";
 import { VoteProvider } from "@/components/vote/VoteProvider";
@@ -19,11 +20,12 @@ export default function HomePage({ snapshot, invite = null }: { snapshot: Snapsh
       <Header />
       <main id="inhalt">
         <Hero />
-        <Marquee />
-        <DateSection />
+        <DateBand />
         <Board />
-        <Manifesto />
-        <Tips />
+        <Topics />
+        <Values />
+        <Demo />
+        <Contact />
         <Faq />
         <FinalCta />
       </main>
