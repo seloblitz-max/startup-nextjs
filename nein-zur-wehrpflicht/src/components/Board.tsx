@@ -150,13 +150,23 @@ export default function Board() {
   return (
     <section className="board" id="staedte" aria-labelledby="board-h">
       <div className="inner">
-        <h2 className="section-title" id="board-h">
-          Wo bist <em>du dabei?</em>
-        </h2>
+        <div className="title-row">
+          <h2 className="section-title" id="board-h">
+            <svg className="pin" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 2a7 7 0 0 0-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 0 0-7-7Zm0 9.5A2.5 2.5 0 1 1 12 6.5a2.5 2.5 0 0 1 0 5Z" />
+            </svg>
+            <span className="underline">Unsere Standorte</span>
+          </h2>
+          <p className="tagline">21 Städte. Eine Stimme.</p>
+        </div>
+        <p className="lead">Tipp auf deine Stadt und sag, wo du am 31. Oktober dabei bist.</p>
 
         <div className="total" aria-live="polite">
           <span className="total-num">{data ? fmt(data.total) : "…"}</span>
-          <span className="total-text">{data?.total === 1 ? "Person ist schon dabei" : "Leute sind schon dabei"}</span>
+          <span className="total-text">
+            {data?.total === 1 ? "Mensch ist schon dabei" : "Menschen sind schon dabei"}
+            <small>live gezählt</small>
+          </span>
         </div>
 
         {offline && <div className="alert">Die Live-Zahlen laden gerade nicht. Wir versuchen es automatisch weiter.</div>}
@@ -213,7 +223,10 @@ export default function Board() {
               <li key={c.id} className={"card" + (mine ? " mine" : "")}>
                 {mine && <span className="mine-tag">Du bist dabei</span>}
                 <div className="card-head">
-                  <h3 className="card-name">{c.name}</h3>
+                  <h3 className="card-name">
+                    <span className="card-num">{String(CITIES.indexOf(c) + 1).padStart(2, "0")}</span>
+                    {c.name}
+                  </h3>
                   <div className="card-count">
                     <b>{data ? fmt(n) : "–"}</b>
                     <small>dabei</small>
