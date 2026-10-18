@@ -97,10 +97,10 @@ export default function SpikeMap() {
           <pattern id="map-dots" width="14" height="14" patternUnits="userSpaceOnUse">
             <circle cx="7" cy="7" r="2.3" fill="#f3efe6" fillOpacity="0.2" />
           </pattern>
-          <linearGradient id="spike-red" x1="0" y1="1" x2="0" y2="0">
-            <stop offset="0" stopColor="#b9150d" stopOpacity="0.55" />
-            <stop offset="0.55" stopColor="#e5251c" />
-            <stop offset="1" stopColor="#ff5244" />
+          <linearGradient id="spike-signal" x1="0" y1="1" x2="0" y2="0">
+            <stop offset="0" stopColor="#a84300" stopOpacity="0.55" />
+            <stop offset="0.55" stopColor="#ff7405" />
+            <stop offset="1" stopColor="#ff8f2e" />
           </linearGradient>
           <linearGradient id="spike-paper" x1="0" y1="1" x2="0" y2="0">
             <stop offset="0" stopColor="#f3efe6" stopOpacity="0.5" />
@@ -122,9 +122,9 @@ export default function SpikeMap() {
                 initial={false}
                 animate={{ d: `M${-BASE} 0 L0 ${-h} L${BASE} 0 Z` }}
                 transition={reduce ? { duration: 0 } : SPRING}
-                fill={isMine ? "url(#spike-paper)" : "url(#spike-red)"}
+                fill={isMine ? "url(#spike-paper)" : "url(#spike-signal)"}
               />
-              <circle r={isSel ? 8 : 5.5} fill={isMine ? "#f3efe6" : n > 0 ? "#ff5244" : "#f3efe6"} fillOpacity={n > 0 || isMine ? 1 : 0.55} />
+              <circle r={isSel ? 8 : 5.5} fill={isMine ? "#f3efe6" : n > 0 ? "#ff8f2e" : "#f3efe6"} fillOpacity={n > 0 || isMine ? 1 : 0.55} />
               {isSel ? <circle r="16" fill="none" stroke="#f3efe6" strokeWidth="2.5" /> : null}
               <circle
                 r="34"
@@ -204,7 +204,7 @@ export default function SpikeMap() {
           ) : (
             <button
               type="button"
-              className="btn btn-sm btn-red mt-3 w-full"
+              className="btn btn-sm btn-signal mt-3 w-full"
               disabled={!!pending}
               onClick={async () => {
                 const r = await castVote(selCity.id);

@@ -2,20 +2,19 @@
 // Layouts für die Teilen-Bilder (gerendert mit next/og). Jedes Element mit mehreren Kindern braucht display: flex.
 
 import type { City } from "@/lib/cities";
-import { CROWN_PATH } from "./crown";
+import { SQUIRREL_PATH } from "./squirrel";
 
 const INK = "#0c0b0a";
 const PAPER = "#f3efe6";
 const PAPER_2 = "#d9d3c7";
 const MUTE = "#9a9488";
-const RED = "#e5251c";
-const RED_DEEP = "#cf1c14";
+const ORANGE = "#ff7405";
 
 function Brand({ size }: { size: number }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: size * 0.32 }}>
-      <svg width={size * 1.05} height={size * 1.05} viewBox="0 0 256 256">
-        <path d={CROWN_PATH} fill={RED} />
+    <div style={{ display: "flex", alignItems: "center", gap: size * 0.34 }}>
+      <svg width={size * 1.3} height={size * 1.3} viewBox="0 0 256 256">
+        <path d={SQUIRREL_PATH} fill={ORANGE} fillRule="evenodd" />
       </svg>
       <span
         style={{
@@ -128,7 +127,7 @@ export function OgHome({ photo, host }: { photo: string; host: string }) {
             }}
           >
             <span>Nein zur</span>
-            <span style={{ color: RED }}>Wehrpflicht.</span>
+            <span style={{ color: ORANGE }}>Wehrpflicht.</span>
           </div>
           <div style={{ display: "flex", marginTop: 30, fontSize: 36, fontWeight: 700 }}>Samstag, 31. Oktober, 14 Uhr</div>
           <div style={{ display: "flex", marginTop: 8, fontSize: 28, fontWeight: 500, color: PAPER_2 }}>
@@ -161,7 +160,7 @@ export function OgCity({ photo, city, host }: { photo: string; city: City; host:
             }}
           >
             <span style={{ fontSize: 84 }}>Ich bin in</span>
-            <span style={{ fontSize: size, color: RED, marginTop: 6, maxWidth: 700 }}>{city.name}</span>
+            <span style={{ fontSize: size, color: ORANGE, marginTop: 6, maxWidth: 700 }}>{city.name}</span>
             <span style={{ fontSize: 84, marginTop: 6 }}>dabei.</span>
           </div>
           <div style={{ display: "flex", marginTop: 28, fontSize: 32, fontWeight: 700 }}>
@@ -228,7 +227,7 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
           }}
         >
           <span>Ich bin</span>
-          <span style={{ color: RED }}>dabei.</span>
+          <span style={{ color: ORANGE }}>dabei.</span>
         </div>
         <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 40, marginTop: 56 }}>
           <div style={{ display: "flex", flexDirection: "column", flexShrink: 1 }}>
@@ -257,8 +256,8 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
                 flexShrink: 0,
                 minWidth: 200,
                 padding: "26px 28px",
-                background: RED_DEEP,
-                color: PAPER,
+                background: ORANGE,
+                color: INK,
                 borderRadius: 14,
               }}
             >
@@ -283,7 +282,7 @@ export function Story({ photo, city, nr, host }: { photo: string; city: City; nr
             <span style={{ fontSize: 32, fontWeight: 500, color: PAPER_2 }}>Sag auch, wo du dabei bist:</span>
             <span style={{ marginTop: 8, fontFamily: "Martian Mono", fontWeight: 500, fontSize: 30, color: PAPER }}>{host}</span>
           </div>
-          <span style={{ fontFamily: "Marker", fontSize: 50, color: RED, transform: "rotate(-4deg)" }}>#GENZregelt</span>
+          <span style={{ fontFamily: "Marker", fontSize: 50, color: ORANGE, transform: "rotate(-4deg)" }}>#GENZregelt</span>
         </div>
       </div>
     </div>

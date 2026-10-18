@@ -1,6 +1,6 @@
-import { HandFist } from "@phosphor-icons/react/ssr";
 import HalftonePhoto from "@/components/bits/HalftonePhoto";
 import CircularBadge from "@/components/bits/CircularBadge";
+import SquirrelMark from "@/components/SquirrelMark";
 import HeroActions from "./HeroActions";
 import tor from "../../../public/img/tor.jpg";
 
@@ -24,7 +24,7 @@ export default function Hero() {
 
       <div className="pointer-events-none absolute right-4 top-20 z-10 w-[5.5rem] text-paper sm:right-8 sm:w-28 lg:right-[6%] lg:top-28 lg:w-36">
         <CircularBadge text="Nein zur Wehrpflicht × 31.10. × 21 Städte × " className="pointer-events-auto">
-          <HandFist weight="fill" className="size-7 text-signal sm:size-9 lg:size-11" aria-hidden="true" />
+          <SquirrelMark className="size-8 text-signal sm:size-10 lg:size-12" />
         </CircularBadge>
       </div>
 

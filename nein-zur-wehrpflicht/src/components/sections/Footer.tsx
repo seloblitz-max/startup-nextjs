@@ -1,5 +1,5 @@
-import { Crown } from "@phosphor-icons/react/ssr";
 import Link from "next/link";
+import SquirrelMark from "@/components/SquirrelMark";
 
 export default function Footer() {
   return (
@@ -8,7 +8,7 @@ export default function Footer() {
         <div className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="flex items-center gap-2">
-              <Crown weight="fill" className="size-6 text-signal" aria-hidden="true" />
+              <SquirrelMark className="size-8 text-signal" />
               <span className="font-display text-[1.5rem] font-extrabold uppercase leading-none tracking-[0.04em]">Gen Z steht auf</span>
             </p>
             <p className="mt-3 max-w-[28rem] text-sm leading-relaxed text-mute">

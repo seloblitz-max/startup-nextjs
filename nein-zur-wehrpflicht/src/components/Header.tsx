@@ -1,10 +1,11 @@
 "use client";
 
-import { Crown, Ticket } from "@phosphor-icons/react";
+import { Ticket } from "@phosphor-icons/react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import Link from "next/link";
 import { useState } from "react";
 import { voteStore } from "@/lib/vote-store";
+import SquirrelMark from "./SquirrelMark";
 import { fmt } from "@/lib/format";
 import { useVote } from "./vote/VoteProvider";
 
@@ -23,7 +24,7 @@ export default function Header() {
     >
       <div className="mx-auto flex h-16 max-w-[1320px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
         <Link href="/" className="group flex items-center gap-2" aria-label="Gen Z steht auf, zur Startseite">
-          <Crown weight="fill" className="size-6 text-signal transition-transform duration-300 group-hover:-rotate-6" aria-hidden="true" />
+          <SquirrelMark className="size-7 text-signal transition-transform duration-300 group-hover:-rotate-6" />
           <span className="font-display text-[1.35rem] font-extrabold uppercase leading-none tracking-[0.04em]">Gen Z steht auf</span>
         </Link>
         <nav aria-label="Hauptnavigation" className="flex items-center gap-1 sm:gap-2">
@@ -42,7 +43,7 @@ export default function Header() {
               Dein Ticket
             </button>
           ) : (
-            <a href="#staedte" className="btn btn-sm btn-red">
+            <a href="#staedte" className="btn btn-sm btn-signal">
               Ich bin dabei
             </a>
           )}

@@ -4,7 +4,6 @@ import {
   CalendarPlus,
   Check,
   CircleNotch,
-  Crown,
   ImageSquare,
   LinkSimple,
   MapPin,
@@ -19,6 +18,7 @@ import { Drawer } from "vaul";
 import { CITY_BY_ID, mapsUrl, type City } from "@/lib/cities";
 import { cn, fmt } from "@/lib/format";
 import { voteStore } from "@/lib/vote-store";
+import SquirrelMark from "@/components/SquirrelMark";
 import { useVote, withdrawVote } from "./VoteProvider";
 
 /** Ticket nach der Zusage: zeigt Stadt und Nummer und macht das Weitersagen leicht. */
@@ -181,7 +181,7 @@ function TicketBody({ city, rank }: { city: City; rank: number }) {
       <Ticket city={city} rank={rank} />
 
       <div className="mt-6 grid gap-3">
-        <button type="button" className="btn btn-lg btn-red w-full" onClick={shareStory} aria-busy={busy || undefined}>
+        <button type="button" className="btn btn-lg btn-signal w-full" onClick={shareStory} aria-busy={busy || undefined}>
           {busy ? (
             <CircleNotch weight="bold" className="size-5 animate-spin" aria-hidden="true" />
           ) : (
@@ -269,7 +269,7 @@ function Ticket({ city, rank }: { city: City; rank: number }) {
         <p className="ticket-kicker">Nein zur Wehrpflicht</p>
         <p className={cn("ticket-city", long && "is-long")}>{city.name}</p>
         <p className="ticket-place">
-          <MapPin weight="fill" className="size-4 shrink-0 text-signal" aria-hidden="true" />
+          <MapPin weight="fill" className="size-4 shrink-0 text-signal-lo" aria-hidden="true" />
           {city.place}
         </p>
         <div className="ticket-meta">
@@ -280,7 +280,7 @@ function Ticket({ city, rank }: { city: City; rank: number }) {
       <div className="ticket-stub">
         <span className="ticket-nr-label">Nr.</span>
         <span className={cn("ticket-nr", nr.length > 3 && "is-mid", nr.length > 5 && "is-long")}>{nr}</span>
-        <Crown weight="fill" className="size-6" aria-hidden="true" />
+        <SquirrelMark className="size-7" />
       </div>
     </div>
   );

@@ -1,6 +1,10 @@
 @import "tailwindcss";
 
-/* Farben und Maße der Seite. Rot für große Schrift: signal, für kleine Schrift: signal-hi. */
+/*
+ * Farben und Maße der Seite, Schwarz und Orange wie das Eichhörnchen-Logo.
+ * Orange für große Schrift und Flächen: signal, für kleine Schrift: signal-hi, für Schrift auf Papier: signal-lo.
+ * Auf Orange steht immer schwarze Schrift (ink), helle Schrift wäre dort zu schwach.
+ */
 @theme {
   --color-ink: #0c0b0a;
   --color-ink-2: #141311;
@@ -10,10 +14,10 @@
   --color-paper: #f3efe6;
   --color-paper-2: #d9d3c7;
   --color-mute: #9a9488;
-  --color-signal: #e5251c;
-  --color-signal-hi: #ff5244;
-  --color-signal-btn: #cf1c14;
-  --color-signal-lo: #b9150d;
+  --color-signal: #ff7405;
+  --color-signal-hi: #ff8f2e;
+  --color-signal-btn: #ff7405;
+  --color-signal-lo: #a84300;
 
   --radius-xs: 2px;
   --radius-sm: 4px;
@@ -65,7 +69,7 @@
   }
   ::selection {
     background: var(--color-signal);
-    color: #fff;
+    color: var(--color-ink);
   }
   :focus-visible {
     outline: 2px solid var(--color-paper);
@@ -138,19 +142,19 @@
     padding: 0 1.75rem;
     font-size: 1.075rem;
   }
-  .btn-red {
+  .btn-signal {
     background: var(--color-signal-btn);
-    color: var(--color-paper);
+    color: var(--color-ink);
     box-shadow:
-      0 14px 34px -14px rgb(229 37 28 / 0.75),
-      inset 0 1px 0 rgb(255 255 255 / 0.16);
+      0 14px 34px -14px rgb(255 116 5 / 0.6),
+      inset 0 1px 0 rgb(255 255 255 / 0.22);
   }
-  .btn-red:hover:not(:disabled) {
-    background: var(--color-signal);
-    color: #fff;
+  .btn-signal:hover:not(:disabled) {
+    background: var(--color-signal-hi);
+    color: var(--color-ink);
     box-shadow:
-      0 18px 40px -14px rgb(229 37 28 / 0.9),
-      inset 0 1px 0 rgb(255 255 255 / 0.2);
+      0 18px 40px -14px rgb(255 116 5 / 0.8),
+      inset 0 1px 0 rgb(255 255 255 / 0.28);
   }
   .btn-paper {
     background: var(--color-paper);
@@ -166,6 +170,7 @@
   .btn-outline:hover:not(:disabled) {
     background: var(--color-signal-btn);
     border-color: var(--color-signal-btn);
+    color: var(--color-ink);
   }
   .btn-ghost {
     border-color: var(--color-line-2);
@@ -726,7 +731,7 @@
   }
   @keyframes row-flash {
     0% {
-      background-color: rgb(229 37 28 / 0.28);
+      background-color: rgb(255 116 5 / 0.24);
     }
     100% {
       background-color: var(--color-ink-2);
@@ -921,7 +926,7 @@
     border-left: 2px dashed rgb(12 11 10 / 0.4);
     border-radius: 0 var(--radius-md) var(--radius-md) 0;
     background: var(--color-signal-btn);
-    color: var(--color-paper);
+    color: var(--color-ink);
   }
   .ticket-nr-label {
     font-family: var(--font-mono);

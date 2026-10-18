@@ -24,7 +24,7 @@ export default function HeroActions() {
         <div className="mt-4 flex flex-wrap items-center gap-x-5 gap-y-3">
           <button
             type="button"
-            className="btn btn-lg btn-red"
+            className="btn btn-lg btn-signal"
             disabled={!!pending}
             aria-busy={pending === inviteCity.id || undefined}
             onClick={() => castVote(inviteCity.id)}
@@ -48,7 +48,7 @@ export default function HeroActions() {
           Du bist in {myCity.name} dabei
         </button>
       ) : (
-        <a href="#staedte" className="btn btn-lg btn-red group">
+        <a href="#staedte" className="btn btn-lg btn-signal group">
           Ich bin dabei
           <ArrowRight weight="bold" className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
         </a>

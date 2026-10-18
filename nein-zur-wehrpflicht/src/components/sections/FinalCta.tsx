@@ -41,7 +41,7 @@ export default function FinalCta() {
                 Ticket teilen
               </button>
             ) : (
-              <a href="#staedte" className="btn btn-lg btn-red group">
+              <a href="#staedte" className="btn btn-lg btn-signal group">
                 Stadt wählen
                 <ArrowRight weight="bold" className="size-5 transition-transform duration-300 group-hover:translate-x-1" aria-hidden="true" />
               </a>
