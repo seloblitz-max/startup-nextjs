@@ -26,9 +26,11 @@ export const CITIES: City[] = [
 ];
 
 export const CITY_IDS = new Set(CITIES.map((c) => c.id));
+export const CITY_BY_ID: Record<string, City> = Object.fromEntries(CITIES.map((c) => [c.id, c]));
 
 // 31.10.2026, 14:00 Uhr MEZ (UTC+1, die Sommerzeit endet am 25.10.)
 export const EVENT_START = Date.UTC(2026, 9, 31, 13, 0, 0);
+export const EVENT_END = Date.UTC(2026, 9, 31, 17, 0, 0);
 export const EVENT_START_ISO = "2026-10-31T14:00:00+01:00";
 
 export function mapsUrl(c: City) {
